@@ -1,0 +1,129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"><title>
+
+</title>
+		<style id="sharedauthstyles" nonce=""></style>
+		<script type="text/javascript" nonce="">
+			class TrustedTypeHandler
+			{
+				constructor()
+				{
+					if("True" === "False")
+					{
+						return;
+					}
+
+					if (window.trustedTypes && window.trustedTypes.createPolicy) {
+						this.policy = trustedTypes.createPolicy('wise-cdn', {
+							createScriptURL(url) {
+								const parsed = new URL(url, document.baseURI);
+								const wiseDomains = "wise.public.cdn.office.net wise-backup.public.onecdn.static.microsoft".split(" ");
+								if (parsed.protocol === 'https:' && wiseDomains.includes(parsed.host)) {
+									return url;
+								}
+
+								if("False" === "True")
+								{
+									if (parsed.protocol === 'https:' && parsed.origin == "https://localhost:5000") {
+										return url;
+									}
+								}
+
+								throw new TypeError('invalid URL');
+							},
+						});
+					}
+				}
+
+				createScriptURL(scriptUrl)
+				{
+					if(!this.policy || "True" === "False")
+					{
+						return scriptUrl;
+					}
+					else
+					{
+						return this.policy.createScriptURL(scriptUrl);
+					}
+				}
+			}
+			var trustedTypePolicy = new TrustedTypeHandler();
+
+			function loadBackupScript() {
+				var backupScript = document.createElement('script');
+				backupScript.setAttribute("data-allowedapps", "5a4eed13-c4c4-4b4c-9506-334ab200bf31;93d53678-613d-4013-afc1-62e9e444a0a5");
+				backupScript.setAttribute("data-allowedaudiences", "e03a13ee-9730-4cae-8525-47559c8cf18a;https://augloop.office.com/v2;394866fc-eedb-4f01-8536-3ff84b16be2a;liveprofilecard.access;https://officescripting.microsoft.com;https://powerquery.microsoft.com;https://graph.microsoft.com;https://shredder-us.osi.office.net/;https://substrate.office.com;https://consentservice.microsoft.com/web;https://consentservice.microsoft.com/checkin;https://attributes.engagement.office.com;https://urlp-v2.asm.skype.com;79d1f229-c1e5-4bd5-b2fd-4764b025b103;https://immersivereader.cloud.microsoft;https://forms.office.com;");
+				backupScript.setAttribute("data-origin", "https://excel.officeapps.live.com");
+				backupScript.setAttribute("data-scriptload", "PRODUCTION.100: 20251207.1");
+				backupScript.setAttribute("fetchpriority", "high");
+				backupScript.id = "sharedauthscript";
+				backupScript.src = trustedTypePolicy.createScriptURL("https://wise-m-backup.public.onecdn.static.microsoft/wise/owl/sharedauthclientmsal.840cdc6f3fbd5344cf7a.js");
+				backupScript.integrity = "sha384-CBmpSPZycPRtkq+7/LGP/PHrdyhN7/1QMHiIgKUKlNbdyorREU8lslYnoW2yZXZq";
+				backupScript.nonce = "ea0531ba-6e4d-4bc5-b967-2140016a97b7";
+				backupScript.crossOrigin = "anonymous";
+				if ("True" === "True") {
+					backupScript.onload = function () {
+						logLoadScriptSuccess(true, performance.now() - startTime);
+					};
+					backupScript.onerror = function () {
+						logLoadScriptError(true, performance.now() - startTime);
+					};
+				}
+				document.head.appendChild(backupScript);
+			}
+
+			function loadScript() {
+				var script = document.createElement('script');
+				script.setAttribute("data-allowedapps", "5a4eed13-c4c4-4b4c-9506-334ab200bf31;93d53678-613d-4013-afc1-62e9e444a0a5");
+				script.setAttribute("data-allowedaudiences", "e03a13ee-9730-4cae-8525-47559c8cf18a;https://augloop.office.com/v2;394866fc-eedb-4f01-8536-3ff84b16be2a;liveprofilecard.access;https://officescripting.microsoft.com;https://powerquery.microsoft.com;https://graph.microsoft.com;https://shredder-us.osi.office.net/;https://substrate.office.com;https://consentservice.microsoft.com/web;https://consentservice.microsoft.com/checkin;https://attributes.engagement.office.com;https://urlp-v2.asm.skype.com;79d1f229-c1e5-4bd5-b2fd-4764b025b103;https://immersivereader.cloud.microsoft;https://forms.office.com;");
+				script.setAttribute("data-origin", "https://excel.officeapps.live.com");
+				script.setAttribute("data-scriptload", "PRODUCTION.100: 20251207.1");
+				script.setAttribute("fetchpriority", "high");
+				script.id = "sharedauthscript";
+				script.src = trustedTypePolicy.createScriptURL("https://wise.public.cdn.office.net/wise/owl/sharedauthclientmsal.840cdc6f3fbd5344cf7a.js")
+				script.integrity = "sha384-CBmpSPZycPRtkq+7/LGP/PHrdyhN7/1QMHiIgKUKlNbdyorREU8lslYnoW2yZXZq";
+				script.nonce = "ea0531ba-6e4d-4bc5-b967-2140016a97b7";
+				script.crossOrigin = "anonymous";
+				if ("True" === "True") {
+					script.onload = function () {
+						logLoadScriptSuccess(false, performance.now() - startTime);
+					};
+					script.onerror = function () {
+						logLoadScriptError(false, performance.now() - startTime);
+						script.parentNode?.removeChild(script);
+						loadBackupScript();
+					};
+				} else {
+					script.onerror = function () {
+						script.parentNode?.removeChild(script);
+						loadBackupScript();
+					};
+				}
+				document.head.appendChild(script);
+			}
+
+			function logLoadScriptSuccess(isBackup, elapsedMilliseconds) {
+				if (navigator.sendBeacon) {
+					var data = JSON.stringify({ isBackup, elapsedMilliseconds });
+					var blob = new Blob([data], { type: 'application/json; charset=utf-8' });
+					navigator.sendBeacon("WacOauth.aspx/LogLoadScriptSuccess", blob);
+				}
+			}
+
+			function logLoadScriptError(isBackup, elapsedMilliseconds) {
+				if (navigator.sendBeacon) {
+					var data = JSON.stringify({ isBackup, elapsedMilliseconds });
+					var blob = new Blob([data], { type: 'application/json; charset=utf-8' });
+					navigator.sendBeacon("WacOauth.aspx/LogLoadScriptError", blob);
+				}
+			}
+
+			var startTime = performance.now();
+			loadScript();
+		</script><script data-allowedapps="5a4eed13-c4c4-4b4c-9506-334ab200bf31;93d53678-613d-4013-afc1-62e9e444a0a5" data-allowedaudiences="e03a13ee-9730-4cae-8525-47559c8cf18a;https://augloop.office.com/v2;394866fc-eedb-4f01-8536-3ff84b16be2a;liveprofilecard.access;https://officescripting.microsoft.com;https://powerquery.microsoft.com;https://graph.microsoft.com;https://shredder-us.osi.office.net/;https://substrate.office.com;https://consentservice.microsoft.com/web;https://consentservice.microsoft.com/checkin;https://attributes.engagement.office.com;https://urlp-v2.asm.skype.com;79d1f229-c1e5-4bd5-b2fd-4764b025b103;https://immersivereader.cloud.microsoft;https://forms.office.com;" data-origin="https://excel.officeapps.live.com" data-scriptload="PRODUCTION.100: 20251207.1" fetchpriority="high" id="sharedauthscript" src="WacOAuth_data/sharedauthclientmsal.840cdc6f3fbd5344cf7a.js" integrity="sha384-CBmpSPZycPRtkq+7/LGP/PHrdyhN7/1QMHiIgKUKlNbdyorREU8lslYnoW2yZXZq" crossorigin="anonymous"></script>
+	</head>
+	<body>
+		
+	
+</body></html>

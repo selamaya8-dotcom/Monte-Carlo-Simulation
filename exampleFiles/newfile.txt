@@ -1,0 +1,160 @@
+G4WT0 > ### Run 0 starts on worker thread 0.
+G4WT0 > ... set ntuple merging row mode : row-wise - done
+G4WT0 > ... create file : MuonHits_t0.root - done
+G4WT0 > ... open analysis file : MuonHits.root - done
+G4WT0 > ... open analysis file : MuonHits_t0.root - done
+G4WT0 > --> Event 0 starts with initial seeds (15470735,58711377).
+G4WT0 > --> Event 100 starts with initial seeds (94651619,77817948).
+G4WT0 > WARNING: G4VisManager::EndOfEvent: Automatic event keeping suspended.
+G4WT0 > 
+  The number of events exceeds the maximum, 100, that may be kept by
+  the vis manager.
+G4WT0 > Total energy deposited: 3.65074 MeV
+G4WT0 > --> Event 200 starts with initial seeds (54325673,23191597).
+G4WT0 > --> Event 300 starts with initial seeds (61861915,89974803).
+G4WT0 > --> Event 400 starts with initial seeds (54454752,3743942).
+G4WT0 > --> Event 500 starts with initial seeds (11481005,71149785).
+G4WT0 > --> Event 600 starts with initial seeds (37844090,80676144).
+G4WT0 > --> Event 700 starts with initial seeds (53737979,40459558).
+G4WT0 > --> Event 800 starts with initial seeds (17870526,37945701).
+G4WT0 > --> Event 900 starts with initial seeds (46299214,3661534).
+G4WT0 > --> Event 1000 starts with initial seeds (71728658,19690414).
+G4WT0 > Total energy deposited: 598.194 keV
+G4WT0 > Total energy deposited: 7.84464 MeV
+G4WT0 > --> Event 1100 starts with initial seeds (62785844,24818217).
+G4WT0 > --> Event 1200 starts with initial seeds (14626204,38094975).
+G4WT0 > --> Event 1300 starts with initial seeds (39771737,28799215).
+G4WT0 > --> Event 1400 starts with initial seeds (63748587,29840907).
+G4WT0 > --> Event 1500 starts with initial seeds (33242788,22942195).
+G4WT0 > --> Event 1600 starts with initial seeds (17599780,9489704).
+G4WT0 > --> Event 1700 starts with initial seeds (16396344,96826961).
+G4WT0 > --> Event 1800 starts with initial seeds (30204104,16086815).
+G4WT0 > --> Event 1900 starts with initial seeds (15925368,47335909).
+G4WT0 > --> Event 2000 starts with initial seeds (59292523,12515448).
+G4WT0 > --> Event 2100 starts with initial seeds (83390193,45834263).
+G4WT0 > Total energy deposited: 4.20599 MeV
+G4WT0 > --> Event 2200 starts with initial seeds (48427547,99347771).
+G4WT0 > --> Event 2300 starts with initial seeds (456801,2100948).
+G4WT0 > Total energy deposited: 8.51795 MeV
+G4WT0 > --> Event 2400 starts with initial seeds (31798132,34518747).
+G4WT0 > --> Event 2500 starts with initial seeds (78495423,11025315).
+G4WT0 > Total energy deposited: 4.62983 MeV
+G4WT0 > --> Event 2600 starts with initial seeds (39417683,92745978).
+G4WT0 > --> Event 2700 starts with initial seeds (806294,64900272).
+G4WT0 > Total energy deposited: 4.20726 MeV
+G4WT0 > --> Event 2800 starts with initial seeds (28319360,55314068).
+G4WT0 > Total energy deposited: 6.99733 MeV
+G4WT0 > Total energy deposited: 10.6218 MeV
+G4WT0 > --> Event 2900 starts with initial seeds (63848194,75399613).
+G4WT0 > --> Event 3000 starts with initial seeds (57770541,22981628).
+G4WT0 > --> Event 3100 starts with initial seeds (39397780,10044371).
+G4WT0 > --> Event 3200 starts with initial seeds (29832987,12175048).
+G4WT0 > --> Event 3300 starts with initial seeds (14295696,23486556).
+G4WT0 > --> Event 3400 starts with initial seeds (50412657,45737908).
+G4WT0 > Total energy deposited: 8.58002 MeV
+G4WT0 > Total energy deposited: 3.86942 MeV
+G4WT0 > --> Event 3500 starts with initial seeds (19505983,8049029).
+G4WT0 > --> Event 3600 starts with initial seeds (52579253,95364730).
+G4WT0 > --> Event 3700 starts with initial seeds (12390034,91089236).
+G4WT0 > --> Event 3800 starts with initial seeds (51634161,36080935).
+G4WT0 > Total energy deposited: 4.18416 MeV
+G4WT0 > --> Event 3900 starts with initial seeds (36656501,76521105).
+G4WT0 > --> Event 4000 starts with initial seeds (44982723,4235798).
+G4WT0 > --> Event 4100 starts with initial seeds (51030329,72212439).
+G4WT0 > --> Event 4200 starts with initial seeds (5199688,77052844).
+G4WT0 > Total energy deposited: 1.53537 MeV
+G4WT0 > --> Event 4300 starts with initial seeds (44873155,36201545).
+G4WT0 > --> Event 4400 starts with initial seeds (65460522,86211657).
+G4WT0 > Total energy deposited: 11.7782 MeV
+G4WT0 > --> Event 4500 starts with initial seeds (86807921,51145732).
+G4WT0 > --> Event 4600 starts with initial seeds (75794534,41052462).
+G4WT0 > Total energy deposited: 5.00368 MeV
+G4WT0 > --> Event 4700 starts with initial seeds (70811948,2556979).
+G4WT0 > --> Event 4800 starts with initial seeds (19111359,97248712).
+G4WT0 > Total energy deposited: 4.74265 MeV
+G4WT0 > --> Event 4900 starts with initial seeds (99502215,26079233).
+G4WT0 > Total energy deposited: 3.5812 MeV
+G4WT0 > --> Event 5000 starts with initial seeds (90368858,11678699).
+G4WT0 > --> Event 5100 starts with initial seeds (11695169,18235549).
+G4WT0 > Total energy deposited: 1.20513 MeV
+G4WT0 > --> Event 5200 starts with initial seeds (1473353,81648356).
+G4WT0 > Total energy deposited: 5.10629 MeV
+G4WT0 > --> Event 5300 starts with initial seeds (98863634,2984018).
+G4WT0 > --> Event 5400 starts with initial seeds (65973262,51077702).
+G4WT0 > --> Event 5500 starts with initial seeds (4452691,43245272).
+G4WT0 > --> Event 5600 starts with initial seeds (87172836,14950641).
+G4WT0 > --> Event 5700 starts with initial seeds (99081712,17450155).
+G4WT0 > --> Event 5800 starts with initial seeds (41757516,64007273).
+G4WT0 > --> Event 5900 starts with initial seeds (39957192,3178471).
+G4WT0 > --> Event 6000 starts with initial seeds (92754086,12398389).
+G4WT0 > --> Event 6100 starts with initial seeds (76431354,56619149).
+G4WT0 > --> Event 6200 starts with initial seeds (87134900,43187431).
+G4WT0 > Total energy deposited: 8.50744 MeV
+G4WT0 > --> Event 6300 starts with initial seeds (99931136,63852673).
+G4WT0 > --> Event 6400 starts with initial seeds (20307114,79379915).
+G4WT0 > --> Event 6500 starts with initial seeds (37524066,84541763).
+G4WT0 > --> Event 6600 starts with initial seeds (12550756,23862990).
+G4WT0 > --> Event 6700 starts with initial seeds (71969852,93157515).
+G4WT0 > --> Event 6800 starts with initial seeds (24461665,76643326).
+G4WT0 > --> Event 6900 starts with initial seeds (16941510,28553101).
+G4WT0 > --> Event 7000 starts with initial seeds (90074305,33510513).
+G4WT0 > --> Event 7100 starts with initial seeds (70493126,25144311).
+G4WT0 > --> Event 7200 starts with initial seeds (71061966,53633546).
+G4WT0 > --> Event 7300 starts with initial seeds (35280432,23371097).
+G4WT0 > --> Event 7400 starts with initial seeds (65803477,95401389).
+G4WT0 > --> Event 7500 starts with initial seeds (6420217,8584895).
+G4WT0 > --> Event 7600 starts with initial seeds (74227700,68285365).
+G4WT0 > Total energy deposited: 9.76547 MeV
+G4WT0 > --> Event 7700 starts with initial seeds (58458088,75806566).
+G4WT0 > --> Event 7800 starts with initial seeds (43179980,71427947).
+G4WT0 > --> Event 7900 starts with initial seeds (32792873,42665277).
+G4WT0 > --> Event 8000 starts with initial seeds (70735303,48908849).
+G4WT0 > --> Event 8100 starts with initial seeds (13805609,28269575).
+G4WT0 > --> Event 8200 starts with initial seeds (14391276,54383562).
+G4WT0 > Total energy deposited: 12.5134 MeV
+G4WT0 > --> Event 8300 starts with initial seeds (79701246,67304133).
+G4WT0 > --> Event 8400 starts with initial seeds (84095892,34756172).
+G4WT0 > --> Event 8500 starts with initial seeds (81188695,8316863).
+G4WT0 > --> Event 8600 starts with initial seeds (76083662,23181059).
+G4WT0 > --> Event 8700 starts with initial seeds (11512089,98630541).
+G4WT0 > --> Event 8800 starts with initial seeds (11306804,25873034).
+G4WT0 > --> Event 8900 starts with initial seeds (26235761,53257911).
+G4WT0 > --> Event 9000 starts with initial seeds (75762242,76481623).
+G4WT0 > --> Event 9100 starts with initial seeds (16395517,41595137).
+G4WT0 > --> Event 9200 starts with initial seeds (30670171,86235828).
+G4WT0 > Total energy deposited: 694.377 keV
+G4WT0 > --> Event 9300 starts with initial seeds (94847165,24832209).
+G4WT0 > --> Event 9400 starts with initial seeds (16530702,16259259).
+G4WT0 > --> Event 9500 starts with initial seeds (10571584,35530509).
+G4WT0 > Total energy deposited: 1.85055 MeV
+G4WT0 > --> Event 9600 starts with initial seeds (16297341,47038414).
+G4WT0 > Total energy deposited: 1.88259 MeV
+G4WT0 > --> Event 9700 starts with initial seeds (18473598,34678574).
+G4WT0 > --> Event 9800 starts with initial seeds (87846075,18188343).
+G4WT0 > Total energy deposited: 843.061 keV
+G4WT0 > --> Event 9900 starts with initial seeds (47121121,26131054).
+G4WT0 > [thread 0] Thread-local run terminated.
+G4WT0 > [thread 0] Run Summary
+G4WT0 > [thread 0]   Number of events processed : 10000
+G4WT0 > [thread 0]   User=0.260000s Real=0.251083s Sys=0.000000s [Cpu=103.6%]
+G4WT0 > ... write file : MuonHits_t0.root - done
+G4WT0 > ... close file : MuonHits_t0.root - done
+ Run terminated.
+Run Summary
+  Number of events processed : 10000
+  User=23.260000s Real=21.650478s Sys=0.130000s [Cpu=108.0%]
+... write file : MuonHits.root - done
+... close file : MuonHits.root - done
+... delete empty file : MuonHits.root - done
+100 events have been kept for refreshing and/or reviewing.
+  "/vis/reviewKeptEvents" to review one by one.
+  To see accumulated, "/vis/enable", then "/vis/viewer/flush" or "/vis/viewer/rebuild".
+WARNING: G4VisManager::EndOfRun: Automatic event keeping was suspended.
+  The number of events in the run exceeded the maximum, 100, that may be
+  kept by the vis manager.
+  The number of events kept by the vis manager can be changed with
+  "/vis/scene/endOfEventAction accumulate <N>", where N is the
+  maximum number you wish to allow.  N < 0 means "unlimited".
+#/control/execute vis.mac
+ Changing export format to "jpg"
+^C
