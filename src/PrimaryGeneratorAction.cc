@@ -44,50 +44,46 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction() {
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 
+
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
 
-    // Retrieve geometry data from DetectorConstruction (unchanged)
+    // 1. Define the particle
+    G4ParticleDefinition* particle = G4ParticleTable::GetParticleTable()->FindParticle("mu-");
+    fParticleGun->SetParticleDefinition(particle);
+    fParticleGun->SetParticleEnergy(10.0 * GeV);
+
+    // 2. Retrieve geometry data from DetectorConstruction
     G4ThreeVector detCenter = fDet->GetDetCenter();   // center of first detector
     G4ThreeVector detHalf   = fDet->GetDetHalfSize(); // half-size (x,y,z)
 
-    // Define a random spread in x and y around the detector center (unchanged)
+    // 3. Define a random spread in x and y around the detector center
     G4double spread = 5 * cm;  // total spread range; small beam
     G4double dx = (CLHEP::HepRandom::getTheEngine()->flat() - 0.5) * 2.0 * spread;
     G4double dy = (CLHEP::HepRandom::getTheEngine()->flat() - 0.5) * 2.0 * spread;
 
-    // Define the start position slightly in front of the detector (unchanged)
+    // 4. Define the start position slightly in front of the detector (assuming +z goes into detector)
     G4double offset = 5*m;
     G4ThreeVector startPosition = detCenter - G4ThreeVector(0., 0., detHalf.z() + offset);
     startPosition.setX(startPosition.x() + dx);
     startPosition.setY(startPosition.y() + dy);
 
-    // Set the particles with an angle (unchanged)
+    /* 4.5. set the particles with an angle;
     G4double theta = (CLHEP::HepRandom::getTheEngine()->flat() - 0.5) * 0.1; // radians
     G4double phi = CLHEP::twopi * CLHEP::HepRandom::getTheEngine()->flat();
-    G4ThreeVector direction;
-    direction.set(std::sin(theta)*std::cos(phi),
-              std::sin(theta)*std::sin(phi),
-              std::cos(theta));
+    G4ThreeVector direction(std::sin(theta)*std::cos(phi),
+                        std::sin(theta)*std::sin(phi),
+                        std::cos(theta));
+                        */
 
-    // Set a straight direction toward the detector
-    //G4ThreeVector direction(0., 0., 1.);
+    // 5. Set a straight direction toward the detector
+    G4ThreeVector direction(0., 0., 1.);
 
-    // Common energy
-    fParticleGun->SetParticleEnergy(4.0 * GeV);
     fParticleGun->SetParticlePosition(startPosition);
     fParticleGun->SetParticleMomentumDirection(direction);
 
-    // Generate mu-
-    G4ParticleDefinition* muMinus = G4ParticleTable::GetParticleTable()->FindParticle("mu-");
-    fParticleGun->SetParticleDefinition(muMinus);
-    fParticleGun->GeneratePrimaryVertex(event);
-
-    // Generate mu+
-    G4ParticleDefinition* muPlus = G4ParticleTable::GetParticleTable()->FindParticle("mu+");
-    fParticleGun->SetParticleDefinition(muPlus);
+    // 6. Generate the event
     fParticleGun->GeneratePrimaryVertex(event);
 }
-
 
 /*
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {

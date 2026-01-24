@@ -1,6 +1,8 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "G4Types.hh"
+//#include "G4Random.hh" also for seeding
+#include <ctime>
 
 #include "G4RunManagerFactory.hh"
 #include "G4UImanager.hh"
@@ -26,6 +28,20 @@ int main(int argc,char** argv) {
 
   //choose the Random engine
   G4Random::setTheEngine(new CLHEP::RanecuEngine);
+
+/*
+  // 1. Get the current system time
+  long seeds[2];
+  time_t systime = time(NULL);
+
+  // 2. Set seeds based on time
+  seeds[0] = (long) systime;
+
+  seeds[1] = (long) (systime * G4UniformRand());
+
+  // 3. Apply to the engine
+  G4Random::setTheSeeds(seeds);
+  */
 
   //use G4SteppingVerboseWithUnits
   G4int precision = 4;

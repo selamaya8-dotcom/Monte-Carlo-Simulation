@@ -4,7 +4,7 @@
 
 #include "G4UserRunAction.hh"
 
-class HistoManager;
+//class HistoManager;
 
 class RunAction : public G4UserRunAction
 {
@@ -16,7 +16,7 @@ public:
   virtual void EndOfRunAction(const G4Run*) override;
 
 private:
-  HistoManager* fHistoManager = nullptr;
+  //HistoManager* fHistoManager = nullptr;
 };
 
 #endif

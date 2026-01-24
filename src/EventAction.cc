@@ -2,7 +2,7 @@
 
 #include "EventAction.hh"
 
-#include "HistoManager.hh"
+//#include "HistoManager.hh"
 
 #include "G4Event.hh"
 #include "G4RunManager.hh"
@@ -120,7 +120,11 @@ void EventAction::EndOfEventAction(const G4Event* event)
 
     G4int nHits = nHitsA + nHitsB;
     G4double totalEdep = totalEdepA + totalEdepB;
-    G4cout << "EndOfEvent: " << nHits << " hits in Muon detector" << G4endl;
-    G4cout << "Total energy deposited: " << G4BestUnit(totalEdep, "Energy") << G4endl;
+    if (nHits>0) {
+        G4cout << "EndOfEvent: " << nHits << " hits in Muon detector" << G4endl;
+    }
+    if (totalEdep) {
+        G4cout << "Total energy deposited: " << G4BestUnit(totalEdep, "Energy") << G4endl;
+    }
 
 }
