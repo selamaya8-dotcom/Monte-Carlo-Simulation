@@ -29,7 +29,6 @@ int main(int argc,char** argv) {
   //choose the Random engine
   G4Random::setTheEngine(new CLHEP::RanecuEngine);
 
-/*
   // 1. Get the current system time
   long seeds[2];
   time_t systime = time(NULL);
@@ -41,7 +40,7 @@ int main(int argc,char** argv) {
 
   // 3. Apply to the engine
   G4Random::setTheSeeds(seeds);
-  */
+
 
   //use G4SteppingVerboseWithUnits
   G4int precision = 4;

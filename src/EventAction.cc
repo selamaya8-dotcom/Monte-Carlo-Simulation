@@ -15,7 +15,6 @@
 
 #include "MuonHit.hh"
 
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 EventAction::EventAction()
@@ -71,13 +70,10 @@ void EventAction::EndOfEventAction(const G4Event* event)
         totalEdepB += hit->GetEdep();
     }
 
+    const char* env_id = std::getenv("G4_RUN_ID");
+    std::string fileName = (env_id) ? "hits_output_" + std::string(env_id) + ".csv" : "hits_output.csv";
 
-    //here you could save the data with the Analysis manager, so that you can analyze it later with ROOT
-    //ROOT created after the run and after merging
-
-    //creates a csv file with enery and position for each event for each detector
-
-    std::ofstream outfile("hits_output.csv", std::ios::app);
+    std::ofstream outfile(fileName, std::ios::app);
     if (outfile.is_open()) {
         for (G4int i = 0; i < nHitsA; i++) {
             auto hit = (*hitsCollectionA)[i];
