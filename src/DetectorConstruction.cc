@@ -9,6 +9,7 @@
 #include "G4SubtractionSolid.hh"
 #include "G4SDManager.hh"
 #include "G4GenericMessenger.hh"
+#include "G4Sphere.hh"
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -134,6 +135,8 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
     fBuildCenter = Bpos;
     */
 
+
+/*
     // Concrete block 1m x 1m x 1m
     G4double blockSize = 1.0*m;
     auto concreteBlockSolid = new G4Box("ConcreteBlock", 0.5*blockSize, 0.5*blockSize, 0.5*blockSize);
@@ -141,7 +144,25 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
     auto concreteBlockLogical = new G4LogicalVolume(concreteBlockSolid, concreteMaterial, "ConcreteBlockLV");
     G4ThreeVector concreteBlockPosition = G4ThreeVector(0, 0.5*m, -0.5*m);
     new G4PVPlacement(nullptr, concreteBlockPosition, concreteBlockLogical, "ConcreteBlock", worldLV, false, 0);
+*/
 
+
+    // Concrete Sphere (replacing the block)
+    G4double sphereRadius = 0.5 * m;
+    auto concreteSphereSolid = new G4Sphere(
+        "ConcreteSphere",           // name
+        0.*cm,                      // inner radius
+        sphereRadius,               // outer radius
+        0.*deg, 360.*deg,           // phi start and span
+        0.*deg, 180.*deg            // theta start and span
+    );
+
+    auto concreteMaterial = Soil;
+    auto concreteSphereLogical = new G4LogicalVolume(concreteSphereSolid, concreteMaterial, "ConcreteSphereLV");
+
+    // Position it at the same spot the block was
+    G4ThreeVector spherePosition = G4ThreeVector(0, 0.5*m, -0.5*m);
+    new G4PVPlacement(nullptr, spherePosition, concreteSphereLogical, "ConcreteSphere", worldLV, false, 0);
 
 
     /*
@@ -180,7 +201,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
     fDetHz = boxZ/2;
     fDetCenter = detPlacment;
 
-    G4double detXY = 100*cm, detZ = 25*cm;//10,2
+    G4double detXY = 10*cm, detZ = 2*cm;//10,2
     auto det1S = new G4Box("Det1", detXY/2, detXY/2, detZ/2);
     auto det2S = new G4Box("Det2", detXY/2, detXY/2, detZ/2);
     det1LV = new G4LogicalVolume(det1S, nist->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE"), "Det1");
