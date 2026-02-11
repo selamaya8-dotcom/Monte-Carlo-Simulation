@@ -41,7 +41,6 @@ fDet(det)
 PrimaryGeneratorAction::~PrimaryGeneratorAction() {
     delete fParticleGun;
 }
-/*
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     // --- 1. Setup Particle ---
@@ -104,7 +103,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     fParticleGun->SetParticleMomentumDirection(direction.unit());
     fParticleGun->GeneratePrimaryVertex(event);
 }
-*/
+/*
 //muons stright at the detector
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
 
@@ -137,3 +136,4 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     // 6. Generate the event
     fParticleGun->GeneratePrimaryVertex(event);
 }
+*/
