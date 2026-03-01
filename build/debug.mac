@@ -1,0 +1,14 @@
+/run/verbose 0
+/control/verbose 1
+/tracking/verbose 0
+
+/control/execute vis.mac
+
+/run/initialize
+
+
+/run/printProgress 100
+/run/beamOn 100
+
+
+#/control/execute vis.mac

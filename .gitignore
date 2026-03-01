@@ -1,4 +1,10 @@
-build/
+build/CMakeFiles/
+build/test_files/
+build/CMakeCache.txt
+build/CMakeLists.txt
+build/Makefile
+build/cmake_install.cmake
+
 *.o
 *.exe
 bin/
