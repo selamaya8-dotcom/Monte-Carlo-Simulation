@@ -1,4 +1,5 @@
 // Compile with: g++ make_histogram.cpp `root-config --cflags --libs` -o make_histogram
+//make less bin
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -29,29 +30,32 @@ int main(int argc, char* argv[]) {
 
     double totalEdep = 0.0;
     while (std::getline(file, line)) {
-      // Ensure you are skipping the header in make_histogram.cpp
-      if (line.find("EventID") != std::string::npos) continue;
+        if (line.empty() || line.find("EventID") != std::string::npos) continue;
 
-      std::stringstream ss(line);
-      std::string eid, x_s, z_s, angle_s, energy_s;
+        std::stringstream ss(line);
+        std::string eid, x_s, y_s, z_s, angle_s, energy_s;
 
-      std::getline(ss, eid, ',');
-      std::getline(ss, x_s, ',');
-      std::getline(ss, z_s, ',');
-      std::getline(ss, angle_s, ',');
-      std::getline(ss, energy_s, ','); 
+        // Correctly parse the 6 columns of combined_hits.csv
+        std::getline(ss, eid, ',');     // 1: EventID
+        std::getline(ss, x_s, ',');     // 2: PosX
+        std::getline(ss, y_s, ',');     // 3: PosY
+        std::getline(ss, z_s, ',');     // 4: PosZ
+        std::getline(ss, angle_s, ','); // 5: GenAngle
+        std::getline(ss, energy_s, ','); // 6: TotalEnergy
 
         try {
-            double totalEnergy = std::stod(energy_s);
-            energyDeposits.push_back(totalEnergy);
-            totalEdep += totalEnergy;
+            if (!energy_s.empty()) {
+                double totalEnergy = std::stod(energy_s);
+                energyDeposits.push_back(totalEnergy);
+                totalEdep += totalEnergy;
+            }
         } catch (...) { continue; }
     }
     file.close();
 
     // Create ROOT histogram: adjust bins/range as needed
-    TH1F *hist = new TH1F("hEnergyDeposit", "Total Energy Deposit per Muon Event", 400, 0, 200); // 40 bins from 0 to 20 MeV
-
+    // 40 bins of 5 MeV each
+    TH1F *hist = new TH1F("hEnergyDeposit", "Total Energy Deposit per Muon Event", 40, 0, 100);
     hist->SetXTitle("Energy Deposit (MeV)");
     hist->SetYTitle("Number of Events");
 

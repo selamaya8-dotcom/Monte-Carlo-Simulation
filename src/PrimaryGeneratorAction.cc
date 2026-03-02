@@ -1,6 +1,7 @@
 //with material
 #include "PrimaryGeneratorAction.hh"
 #include "DetectorConstruction.hh"
+#include "EventAction.hh"
 #include "G4ParticleGun.hh"
 #include "G4ParticleTable.hh"
 #include "G4SystemOfUnits.hh"
@@ -16,6 +17,7 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include "G4RunManager.hh"
 
 namespace {
     inline G4ThreeVector Normalize(const G4ThreeVector& v) {
@@ -96,6 +98,14 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
         if (DoesRayHitSphere(sourcePos, direction, buildCenter, sphereRadius)) {
             hitsBoth = true;
         }
+    }
+
+    G4double genAngle = std::acos(std::abs(direction.y()));
+
+    // Get the EventAction pointer and pass the angle
+    auto eventAction = (EventAction*)G4RunManager::GetRunManager()->GetUserEventAction();
+    if (eventAction) {
+        eventAction->SetGenAngle(genAngle);
     }
 
     fParticleGun->SetParticlePosition(sourcePos);

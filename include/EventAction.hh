@@ -12,9 +12,12 @@ class EventAction : public G4UserEventAction
     EventAction();
    ~EventAction();
 
-  public:
+   void SetGenAngle(G4double val) { fGenAngle = val; }
+
     virtual void BeginOfEventAction(const G4Event*);
     virtual void   EndOfEventAction(const G4Event*);
+  private:
+    G4double fGenAngle;
 
 
 };

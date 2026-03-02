@@ -3,104 +3,95 @@
 #include <sstream>
 #include <string>
 #include <map>
-#include <cmath>
+#include <vector>
+#include <algorithm>
+#include <iomanip>
+
 using namespace std;
 
 struct EventData {
     double totalEnergy = 0;
-    double xA = 0, zA = 0; // Position on first detector
-    double pxA = 0, pyA = 0, pzA = 0; // Direction into sphere
-    double pxB = 0, pyB = 0, pzB = 0; // Direction out of sphere
+    double xA = 0, yA = 0, zA = 0;
+    double genAngle = 0;
     bool hasA = false;
     bool hasB = false;
 };
 
-int main(int argc, char* argv[]) {
-    // 1. Get the ID from the environment, exactly like your EventAction.cpp
+int main() {
     const char* env_id = std::getenv("G4_RUN_ID");
     string id_str = (env_id) ? std::string(env_id) : "";
 
-    // 2. Set filenames based on the ID
     string inputFileName = id_str.empty() ? "hits_output.csv" : "hits_output_" + id_str + ".csv";
     string outputFileName = id_str.empty() ? "combined_hits.csv" : "combined_hits_" + id_str + ".csv";
 
     ifstream fin(inputFileName);
-    if (!fin) {
-        cerr << "Cannot open file: " << inputFileName << "\n";
+    if (!fin.is_open()) {
+        cerr << "Error: Could not open " << inputFileName << endl;
         return 1;
     }
-    string line;
+
     map<int, EventData> events;
+    string line;
+    getline(fin, line); // Skip header
 
     while (getline(fin, line)) {
         if (line.empty()) continue;
+
         stringstream ss(line);
-        // ... inside while(getline(fin, line)) ...
-        string label, eid, x_s, y_s, z_s, px_s, py_s, pz_s, edep_s;
+        string token;
+        vector<string> columns;
 
-        getline(ss, label, ',');
-        getline(ss, eid, ',');
-        getline(ss, x_s, ',');
-        getline(ss, y_s, ',');
-        getline(ss, z_s, ',');
-        getline(ss, px_s, ',');
-        getline(ss, py_s, ',');
-        getline(ss, pz_s, ',');
-        getline(ss, edep_s, ','); // Read the 9th column
+        while (getline(ss, token, ',')) {
+            // Remove potential carriage returns from Windows-style line endings
+            token.erase(remove(token.begin(), token.end(), '\r'), token.end());
+            token.erase(remove(token.begin(), token.end(), '\n'), token.end());
+            columns.push_back(token);
+        }
 
-        int eventID = stoi(eid);
-        auto& data = events[eventID];
-        data.totalEnergy += stod(edep_s); // Accumulate energy for the whole event
+        // We need at least 7 columns
+        if (columns.size() < 7) continue;
 
-        if (label == "A") {
-            data.xA = stod(x_s);
-            data.zA = stod(z_s);
-            data.pxA = stod(px_s);
-            data.pyA = stod(py_s);
-            data.pzA = stod(pz_s);
-            data.hasA = true;
-        } else if (label == "B") {
-            data.pxB = stod(px_s);
-            data.pyB = stod(py_s);
-            data.pzB = stod(pz_s);
-            data.hasB = true;
+        try {
+            int eventID = stoi(columns[1]);
+            auto& data = events[eventID];
+
+            data.totalEnergy += stod(columns[5]); // Edep
+            data.genAngle = stod(columns[6]);    // GenAngle
+
+            if (columns[0] == "A") {
+                data.xA = stod(columns[2]);
+                data.yA = stod(columns[3]);
+                data.zA = stod(columns[4]);
+                data.hasA = true;
+            } else if (columns[0] == "B") {
+                // We keep the angle and energy, but A's position is usually the reference
+                data.hasB = true;
+            }
+        } catch (const std::exception& e) {
+            // If you see this, one of the columns isn't a number
+            continue;
         }
     }
-
     fin.close();
 
-    // ... inside main() in merge_muons.cpp ...
-
     ofstream fout(outputFileName);
-    fout << "EventID,xA,zA,ScatteringAngle,TotalEnergy\n"; // Header
+    fout << "EventID,PosX,PosY,PosZ,GenAngle,TotalEnergy\n";
 
-    for (auto& [id, data] : events) {
-        if (data.hasA && data.hasB) {
-            // 1. Calculate Angle (keep your existing logic)
-            double magA = sqrt(data.pxA*data.pxA + data.pyA*data.pyA + data.pzA*data.pzA);
-            double magB = sqrt(data.pxB*data.pxB + data.pyB*data.pyB + data.pzB*data.pzB);
-            double dot = (data.pxA*data.pxB + data.pyA*data.pyB + data.pzA*data.pzB) / (magA * magB);
-            if (dot > 1.0) dot = 1.0;
-            if (dot < -1.0) dot = -1.0;
-            double angle = acos(dot);
-
-            // 2. PROJECT TO SPHERE HEIGHT
-            // From your code: sphereY is roughly 1875mm, detectorY is roughly 635mm
-            double targetY = 1875.0;
-            double detectorY = 635.0;
-            double deltaY = targetY - detectorY;
-
-            // Use the slope of the momentum (px/py and pz/py) to find X and Z at targetY
-            // Note: py is negative because muons are going DOWN
-            double x_projected = data.xA + (data.pxA / abs(data.pyA)) * deltaY;
-            double z_projected = data.zA + (data.pzA / abs(data.pyA)) * deltaY;
-
-            // 3. Write PROJECTED coordinates to CSV
-            fout << id << "," << x_projected << "," << z_projected << ","
-                 << angle << "," << data.totalEnergy << "\n";
+    int count = 0;
+    for (auto const& [id, data] : events) {
+        // Changed to || to catch single hits too
+        if (data.hasA || data.hasB) {
+            fout << id << ","
+                 << data.xA << "," << data.yA << "," << data.zA << ","
+                 << fixed << setprecision(8) << data.genAngle << ","
+                 << data.totalEnergy << "\n";
+            count++;
         }
     }
     fout.close();
-    cout << "Success: Merged into " << outputFileName << endl;
+
+    cout << "Processed " << events.size() << " unique events." << endl;
+    cout << "Saved " << count << " events to " << outputFileName << endl;
+
     return 0;
 }

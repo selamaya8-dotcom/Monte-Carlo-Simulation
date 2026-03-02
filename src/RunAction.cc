@@ -24,7 +24,7 @@ void RunAction::BeginOfRunAction(const G4Run*)
   G4cout << "BeginOfRunAction called!" << G4endl;
 
   std::ofstream outfile("hits_output.csv");
-  outfile << "DetectorID,EventID,EnergyDeposition,X,Y\n";
+  outfile << "Detector,EventID,PosX,PosY,PosZ,Edep,GenAngle\n";
   outfile.close();
 /*
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();

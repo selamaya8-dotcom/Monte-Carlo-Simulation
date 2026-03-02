@@ -74,30 +74,28 @@ void EventAction::EndOfEventAction(const G4Event* event)
     std::string fileName = (env_id) ? "hits_output_" + std::string(env_id) + ".csv" : "hits_output.csv";
 
     std::ofstream outfile(fileName, std::ios::app);
+    // Inside EventAction::EndOfEventAction
     if (outfile.is_open()) {
-        for (G4int i = 0; i < nHitsA; i++) {
-            auto hit = (*hitsCollectionA)[i];
-            G4double edep = hit->GetEdep();
-            G4ThreeVector pos = hit->GetPos();
-            // Example for Collection A (Do the same for B)
-            // For each hit in Collection A
-            outfile << "B," << event->GetEventID() << ","
-                  << pos.x() << "," << pos.y() << "," << pos.z() << ","
-                  << hit->GetMomentum().x() << "," << hit->GetMomentum().y() << "," << hit->GetMomentum().z() << ","
-                  << hit->GetEdep() << "\n";
+            // Process Collection A
+            for (G4int i = 0; i < nHitsA; i++) {
+                auto hit = (*hitsCollectionA)[i];
+                outfile << "A," << event->GetEventID() << ","
+                        << hit->GetPos().x() << "," << hit->GetPos().y() << "," << hit->GetPos().z() << ","
+                        << hit->GetEdep() << ","
+                        << fGenAngle << "\n";
+            }
+
+            // Process Collection B
+            for (G4int i = 0; i < nHitsB; i++) {
+                auto hit = (*hitsCollectionB)[i];
+                outfile << "B," << event->GetEventID() << ","
+                        << hit->GetPos().x() << "," << hit->GetPos().y() << "," << hit->GetPos().z() << ","
+                        << hit->GetEdep() << ","
+                        << fGenAngle << "\n";
+            }
+            outfile.close();
         }
-        for (G4int i = 0; i < nHitsB; i++) {
-            auto hit = (*hitsCollectionB)[i];
-            G4double edep = hit->GetEdep();
-            G4ThreeVector pos = hit->GetPos();
-            // For each hit in Collection B
-            outfile << "A," << event->GetEventID() << ","
-                  << pos.x() << "," << pos.y() << "," << pos.z() << ","
-                  << hit->GetMomentum().x() << "," << hit->GetMomentum().y() << "," << hit->GetMomentum().z() << ","
-                  << hit->GetEdep() << "\n";
-        }
-        outfile.close();
-    } else {
+    else {
         G4cerr << "Could not open hits_output.csv for writing!" << G4endl;
     }
 

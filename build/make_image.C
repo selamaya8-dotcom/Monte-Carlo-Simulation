@@ -7,30 +7,38 @@
 #include <string>
 #include <iostream>
 
-void make_image(const char* input_file = "final_accumulated.csv") {
+void make_image(const char* input_file = "combined_hits.csv") {
     TCanvas *c1 = new TCanvas("c1", "Muon Scattering Reconstruction", 800, 800);
     gStyle->SetOptStat(0);
     gStyle->SetPalette(kViridis);
 
-    // ORIGINAL LIMITS: -55 to 55 (Total 110mm, matching your 11cm detector)
+    // Bins and Limits matching your detector size
     TH2D *hSumAngles = new TH2D("hSum", "Total Scattering;X (mm);Z (mm)", 50, -55, 55, 50, -55, 55);
     TH2D *hCounts = new TH2D("hCounts", "Hit Counts;X (mm);Z (mm)", 50, -55, 55, 50, -55, 55);
 
     std::ifstream file(input_file);
-    std::string line;
+    if (!file.is_open()) {
+        std::cerr << "Error: Could not open " << input_file << std::endl;
+        return;
+    }
 
+    std::string line;
     std::getline(file, line); // Skip header
 
     while (std::getline(file, line)) {
         if (line.empty() || line.find("EventID") != std::string::npos) continue;
 
         std::stringstream ss(line);
-        std::string eid, x_s, z_s, angle_s, energy_s;
+        std::string eid, x_s, y_s, z_s, angle_s, energy_s;
 
-        std::getline(ss, eid, ','); // EventID
-        std::getline(ss, x_s, ','); // xA
-        std::getline(ss, z_s, ','); // zA
-        std::getline(ss, angle_s, ','); // ScatteringAngle
+        // COLUMN MAPPING FOR 6-COLUMN FORMAT:
+        // 1: EventID, 2: PosX, 3: PosY, 4: PosZ, 5: GenAngle, 6: TotalEnergy
+        std::getline(ss, eid, ',');      // Column 1
+        std::getline(ss, x_s, ',');      // Column 2
+        std::getline(ss, y_s, ',');      // Column 3 (This was missing in your snippet!)
+        std::getline(ss, z_s, ',');      // Column 4
+        std::getline(ss, angle_s, ',');  // Column 5
+        std::getline(ss, energy_s, ','); // Column 6
 
         try {
             double x = std::stod(x_s);
@@ -41,12 +49,17 @@ void make_image(const char* input_file = "final_accumulated.csv") {
             hCounts->Fill(x, z);
         } catch (...) { continue; }
     }
+    file.close();
 
-    // Divide to get the average scattering per pixel
+    // Divide to get the average scattering/angle per pixel
+    // This creates the "Heatmap" effect
     hSumAngles->Divide(hCounts);
 
-    hSumAngles->SetTitle("Average Muon Scattering Map (Radians)");
+    hSumAngles->GetZaxis()->SetTitle("Average Angle (Radians)");
+    hSumAngles->SetTitle("Muon Angular Distribution Map");
     hSumAngles->Draw("COLZ");
 
-    c1->SaveAs("scattering_reconstruction.png");
+    c1->SaveAs("reconstruction_map.png");
+
+    std::cout << "Image saved as reconstruction_map.png" << std::endl;
 }
