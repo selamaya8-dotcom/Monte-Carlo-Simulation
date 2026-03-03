@@ -10,7 +10,7 @@
 void make_image(const char* input_file = "combined_hits.csv") {
     TCanvas *c1 = new TCanvas("c1", "Muon Scattering Reconstruction", 800, 800);
     gStyle->SetOptStat(0);
-    gStyle->SetPalette(kViridis);
+    gStyle->SetPalette(kTemperatureMap);
 
     // Bins and Limits matching your detector size
     TH2D *hSumAngles = new TH2D("hSum", "Total Scattering;X (mm);Z (mm)", 50, -55, 55, 50, -55, 55);
@@ -45,21 +45,37 @@ void make_image(const char* input_file = "combined_hits.csv") {
             double z = std::stod(z_s);
             double angle = std::stod(angle_s);
 
+            // FILTER: Ignore events that are exactly at (0,0)
+            // This removes the "fake" central cluster
+            if (x == 0.0 && z == 0.0) continue;
+
             hSumAngles->Fill(x, z, angle);
             hCounts->Fill(x, z);
         } catch (...) { continue; }
     }
     file.close();
 
-    // Divide to get the average scattering/angle per pixel
-    // This creates the "Heatmap" effect
-    hSumAngles->Divide(hCounts);
+    // --- IMAGE 1: Hit Density (Raw Counts) ---
+    TCanvas *cCounts = new TCanvas("cCounts", "Hit Density", 800, 800);
+    cCounts->SetLogz(); // <--- ADD THIS: Sets the color scale to Logarithmic
+    hCounts->GetZaxis()->SetTitle("Number of Muons (Log Scale)");
+    // Find the maximum and minimum bins to set a tight scale
+double maxHits = hCounts->GetMaximum();
+double minHits = hCounts->GetMinimum(0.01); // Get min value > 0
 
+// Force the scale to focus only on the top 20-30% of the data
+// where the shadow actually lives.
+hCounts->GetZaxis()->SetRangeUser(minHits * 0.8, maxHits);
+    hCounts->Draw("COLZ");
+    cCounts->SaveAs("hit_density_map.png");
+
+    // --- IMAGE 2: Angular Distribution (Average Angle) ---
+    TCanvas *cAngles = new TCanvas("cAngles", "Angular Distribution", 800, 800);
+    hSumAngles->Divide(hCounts); // Calculate Average
     hSumAngles->GetZaxis()->SetTitle("Average Angle (Radians)");
     hSumAngles->SetTitle("Muon Angular Distribution Map");
     hSumAngles->Draw("COLZ");
+    cAngles->SaveAs("reconstruction_map.png");
 
-    c1->SaveAs("reconstruction_map.png");
-
-    std::cout << "Image saved as reconstruction_map.png" << std::endl;
+    std::cout << "Success! Created both 'hit_density_map.png' and 'reconstruction_map.png'" << std::endl;
 }
