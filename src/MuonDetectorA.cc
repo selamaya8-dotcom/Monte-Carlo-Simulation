@@ -27,6 +27,7 @@ void MuonDetectorA::Initialize(G4HCofThisEvent* hce)
 
 G4bool MuonDetectorA::ProcessHits(G4Step* step, G4TouchableHistory*) 
 {
+    if (!fHitsCollection) return false;
     // Energy deposit check to filter out non-interacting particles
     G4double edep = step->GetTotalEnergyDeposit();
     if (edep <= 0.) return false;
