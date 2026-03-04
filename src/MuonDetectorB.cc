@@ -22,6 +22,7 @@ void MuonDetectorB::Initialize(G4HCofThisEvent* hce)
 
 G4bool MuonDetectorB::ProcessHits(G4Step* step, G4TouchableHistory*) 
 {
+    if (!fHitsCollection) return false;
     G4double edep = step->GetTotalEnergyDeposit();
     if (edep <= 0.) return false;
 
