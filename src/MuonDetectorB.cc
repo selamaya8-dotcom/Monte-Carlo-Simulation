@@ -6,7 +6,6 @@
 MuonDetectorB::MuonDetectorB(G4String name)
 : G4VSensitiveDetector(name), fHitsCollection(nullptr), fHCID(-1) 
 {
-    // Define the specific hit collection name for Detector B
     collectionName.insert("muonHitCollectionB");
 }
 
