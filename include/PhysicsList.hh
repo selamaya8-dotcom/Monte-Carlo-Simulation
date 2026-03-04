@@ -8,12 +8,12 @@ class PhysicsList: public G4VModularPhysicsList
 {
 public:
   PhysicsList();
- ~PhysicsList();
+  virtual ~PhysicsList();
 
 public:
-  virtual void ConstructParticle();
-  virtual void SetCuts();
-  virtual void ContructProcess();
+  virtual void ConstructParticle() override;
+  virtual void ConstructProcess() override; 
+  virtual void SetCuts() override;
 };
 
 #endif
