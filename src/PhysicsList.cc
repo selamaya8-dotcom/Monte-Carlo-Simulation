@@ -54,6 +54,7 @@ void PhysicsList::ConstructProcess()
 {
   // Invokes the ConstructProcess of all registered modular physics
   G4VModularPhysicsList::ConstructProcess();
+  RegisterPhysics(new G4StepLimiterPhysics());
 }
 
 void PhysicsList::SetCuts()
