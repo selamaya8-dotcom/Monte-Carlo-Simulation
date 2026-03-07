@@ -1,41 +1,38 @@
-// RunAction.cc
 #include "RunAction.hh"
-#include "HistoManager.hh"
-
 #include "G4Run.hh"
-#include "G4AnalysisManager.hh"
+#include "G4UnitsTable.hh"
+#include "G4SystemOfUnits.hh"
+#include <fstream>
 
-RunAction::RunAction()
-  : G4UserRunAction(), fHistoManager(0)
-  {
+RunAction::RunAction() : G4UserRunAction()
+{}
 
-  fHistoManager = new HistoManager();
+RunAction::~RunAction() 
+{}
 
+void RunAction::BeginOfRunAction(const G4Run* run)
+{
+    G4cout << "### Run " << run->GetRunID() << " start." << G4endl;
 
-
-  }
-
-RunAction::~RunAction() {
-  delete fHistoManager;
+    // Initialize CSV and write header
+    std::ofstream outfile("hits_output.csv");
+    if (outfile.is_open()) {
+        outfile << "Detector,EventID,PosX,PosY,PosZ,MomX,MomY,MomZ,Edep,GenAngle\n";
+        outfile.close(); 
+    } else {
+        G4cerr << "Error: Could not create output CSV file!" << G4endl;
+    }
 }
 
-void RunAction::BeginOfRunAction(const G4Run*)
+void RunAction::EndOfRunAction(const G4Run* run)
 {
-  G4cout << "BeginOfRunAction called!" << G4endl;
+    G4int nofEvents = run->GetNumberOfEvent();
+    if (nofEvents == 0) return;
 
-  std::ofstream outfile("hits_output.csv");
-  outfile << "DetectorID,EventID,EnergyDeposition,X,Y\n";
-  outfile.close();
-
-  G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
-  analysisManager->OpenFile();
-
-}
-
-void RunAction::EndOfRunAction(const G4Run*)
-{
-  G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
-  analysisManager->Write();
-  analysisManager->CloseFile();
-
+    // Print Run Summary
+    G4cout << G4endl << "------- End of Run -------" << G4endl;
+    G4cout << " Run ID:         " << run->GetRunID() << G4endl;
+    G4cout << " Total Events:   " << nofEvents << G4endl;
+    G4cout << " Output saved to: hits_output.csv" << G4endl;
+    G4cout << "---------------------------" << G4endl << G4endl;
 }
