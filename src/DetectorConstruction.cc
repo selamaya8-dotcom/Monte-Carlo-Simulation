@@ -90,7 +90,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
     new G4PVPlacement(nullptr, G4ThreeVector(0, -50*m, 0), groundLV, "Ground", worldLV, false, 0);
 
     // 3. Setup Detector (Define boxZ and detPlacement FIRST)
-    G4double boxXY = 11*cm;
+    G4double boxXY = 15*cm;
     G4double boxZ = 25*cm; // Now it's declared
     G4ThreeVector detPlacement = G4ThreeVector(0, (boxZ/2) + 0.5*m, 0); // Now it's declared
 
@@ -100,14 +100,13 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
     fDetCenter = detPlacement;
 
     auto outerBox = new G4Box("OuterBox", boxXY/2, boxXY/2, boxZ/2);
-    auto innerBox = new G4Box("InnerBox", boxXY/2 - 1*cm, boxXY/2 - 1*cm, boxZ/2 - 1*cm);
+    auto innerBox = new G4Box("InnerBox", boxXY/2 - 2.0*cm, boxXY/2 - 2.0*cm, boxZ/2 - 2.0*cm);
     auto detS = new G4SubtractionSolid("Shell", outerBox, innerBox, nullptr, G4ThreeVector(0,0,0));
 
-    G4Material* cardboard = nist->FindOrBuildMaterial("G4_WOOD");
+    G4Material* cardboard = nist->FindOrBuildMaterial("G4_AIR");
 
     // SAFETY CHECK: If cardboard is null, define it manually so the code doesn't crash
     if (!cardboard) {
-        G4cout << "--> Warning: G4_WOOD not found in NIST. Defining Cardboard manually." << G4endl;
         G4Element* elC = nist->FindOrBuildElement("C");
         G4Element* elH = nist->FindOrBuildElement("H");
         G4Element* elO = nist->FindOrBuildElement("O");

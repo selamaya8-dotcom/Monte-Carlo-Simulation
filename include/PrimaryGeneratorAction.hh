@@ -20,8 +20,10 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     G4ParticleGun* fParticleGun;
     const DetectorConstruction* fDet;
 
+    G4double GetMuonEnergy(G4double theta);
     G4bool DoesRayHitBox(G4ThreeVector origin, G4ThreeVector dir,
                          G4ThreeVector boxCenter, G4ThreeVector boxHalf);
+
 };
 
 #endif

@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
 
     // --- 3. Initial Energy Histogram (0-100 GeV) ---
     c1->Clear();
-    TH1F *hGenEnergy = new TH1F("hGenEnergy", "Initial Muon Energy;Energy (GeV);Events", 100, 0, 100);
+    TH1F *hGenEnergy = new TH1F("hGenEnergy", "Initial Muon Energy;Energy (GeV);Events", 40, 0, 40);
     for (double e : initialEnergies) hGenEnergy->Fill(e);
     hGenEnergy->SetLineColor(kGreen+2);
     hGenEnergy->Draw("HIST");

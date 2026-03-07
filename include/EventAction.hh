@@ -13,11 +13,13 @@ class EventAction : public G4UserEventAction
    ~EventAction();
 
    void SetGenAngle(G4double val) { fGenAngle = val; }
+   void SetGenEnergy(G4double val) { fGenEnergy = val; }
 
     virtual void BeginOfEventAction(const G4Event*);
     virtual void   EndOfEventAction(const G4Event*);
   private:
     G4double fGenAngle;
+    G4double fGenEnergy;
 
 
 };
