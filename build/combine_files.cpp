@@ -1,3 +1,4 @@
+//g++ -O3 combine_files.cpp -o combine_files
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -7,7 +8,7 @@
 namespace fs = std::filesystem;
 
 int main() {
-    std::string prefix = "accumulated_4.0_pid";
+    std::string prefix = "accumulated_20.0_pid";
     std::string output_filename = "final_accumulated.csv";
 
     std::ofstream outfile(output_filename);

@@ -6,15 +6,14 @@
 #include <sstream>
 #include <string>
 #include <iostream>
+#include <vector>
 
 void make_image(const char* input_file = "combined_hits.csv") {
-    TCanvas *c1 = new TCanvas("c1", "Muon Scattering Reconstruction", 800, 800);
     gStyle->SetOptStat(0);
     gStyle->SetPalette(kTemperatureMap);
 
-    // Bins and Limits matching your detector size
-    TH2D *hSumAngles = new TH2D("hSum", "Total Scattering;X (mm);Z (mm)", 50, -55, 55, 50, -55, 55);
-    TH2D *hCounts = new TH2D("hCounts", "Hit Counts;X (mm);Z (mm)", 50, -55, 55, 50, -55, 55);
+    TH2D *hSumAngles = new TH2D("hSum", "Total Scattering;X (mm);Z (mm)", 40, -45, 45, 40, -45, 45);
+    TH2D *hCounts = new TH2D("hCounts", "Hit Counts;X (mm);Z (mm)", 40, -45, 45, 40, -45, 45);
 
     std::ifstream file(input_file);
     if (!file.is_open()) {
@@ -23,59 +22,66 @@ void make_image(const char* input_file = "combined_hits.csv") {
     }
 
     std::string line;
-    std::getline(file, line); // Skip header
+    std::getline(file, line);
 
     while (std::getline(file, line)) {
-        if (line.empty() || line.find("EventID") != std::string::npos) continue;
-
+        if (line.empty()) continue;
         std::stringstream ss(line);
-        std::string eid, x_s, y_s, z_s, angle_s, energy_s;
+        std::string val;
+        std::vector<double> row;
 
-        // COLUMN MAPPING FOR 6-COLUMN FORMAT:
-        // 1: EventID, 2: PosX, 3: PosY, 4: PosZ, 5: GenAngle, 6: TotalEnergy
-        std::getline(ss, eid, ',');      // Column 1
-        std::getline(ss, x_s, ',');      // Column 2
-        std::getline(ss, y_s, ',');      // Column 3 (This was missing in your snippet!)
-        std::getline(ss, z_s, ',');      // Column 4
-        std::getline(ss, angle_s, ',');  // Column 5
-        std::getline(ss, energy_s, ','); // Column 6
+        while (std::getline(ss, val, ',')) {
+            try { row.push_back(std::stod(val)); } catch (...) { continue; }
+        }
 
-        try {
-            double x = std::stod(x_s);
-            double z = std::stod(z_s);
-            double angle = std::stod(angle_s);
+        if (row.size() >= 5) {
+            double x = row[1];
+            double z = row[3];
+            double angle = row[4];
 
-            // FILTER: Ignore events that are exactly at (0,0)
-            // This removes the "fake" central cluster
             if (x == 0.0 && z == 0.0) continue;
+
+            // Apply Fiducial Cut to remove edge reflections
+            if (TMath::Abs(x) > 50.0 || TMath::Abs(z) > 50.0) continue;
 
             hSumAngles->Fill(x, z, angle);
             hCounts->Fill(x, z);
-        } catch (...) { continue; }
+        }
     }
     file.close();
 
-    // --- IMAGE 1: Hit Density (Raw Counts) ---
-    TCanvas *cCounts = new TCanvas("cCounts", "Hit Density", 800, 800);
-    cCounts->SetLogz(); // <--- ADD THIS: Sets the color scale to Logarithmic
-    hCounts->GetZaxis()->SetTitle("Number of Muons (Log Scale)");
-    // Find the maximum and minimum bins to set a tight scale
-double maxHits = hCounts->GetMaximum();
-double minHits = hCounts->GetMinimum(0.01); // Get min value > 0
-
-// Force the scale to focus only on the top 20-30% of the data
-// where the shadow actually lives.
-hCounts->GetZaxis()->SetRangeUser(minHits * 0.8, maxHits);
+    // --- IMAGE 1: Hit Density (Linear) ---
+    TCanvas *c1 = new TCanvas("c1", "Hit Density Linear", 800, 800);
+    c1->SetRightMargin(0.15);
     hCounts->Draw("COLZ");
-    cCounts->SaveAs("hit_density_map.png");
+    c1->SaveAs("hit_density_linear.png");
 
-    // --- IMAGE 2: Angular Distribution (Average Angle) ---
-    TCanvas *cAngles = new TCanvas("cAngles", "Angular Distribution", 800, 800);
-    hSumAngles->Divide(hCounts); // Calculate Average
-    hSumAngles->GetZaxis()->SetTitle("Average Angle (Radians)");
-    hSumAngles->SetTitle("Muon Angular Distribution Map");
-    hSumAngles->Draw("COLZ");
-    cAngles->SaveAs("reconstruction_map.png");
+    // --- IMAGE 2: Hit Density (Logarithmic) ---
+    TCanvas *c2 = new TCanvas("c2", "Hit Density Log", 800, 800);
+    c2->SetRightMargin(0.15);
+    c2->SetLogz();
+    hCounts->SetMinimum(1); // Required for Log scale
+    hCounts->Draw("COLZ");
+    c2->SaveAs("hit_density_log.png");
 
-    std::cout << "Success! Created both 'hit_density_map.png' and 'reconstruction_map.png'" << std::endl;
+    // Prepare Average Angle Histogram
+    TH2D *hAvgAngle = (TH2D*)hSumAngles->Clone("hAvgAngle");
+    hAvgAngle->Divide(hCounts);
+
+    // --- IMAGE 3: Average Angle (Linear) ---
+    TCanvas *c3 = new TCanvas("c3", "Angular Linear", 800, 800);
+    c3->SetRightMargin(0.15);
+    hAvgAngle->SetMinimum(0.001);
+    hAvgAngle->SetMaximum(0.06);
+    hAvgAngle->Draw("COLZ");
+    c3->SaveAs("reconstruction_linear.png");
+
+    // --- IMAGE 4: Average Angle (Logarithmic) ---
+    TCanvas *c4 = new TCanvas("c4", "Angular Log", 800, 800);
+    c4->SetRightMargin(0.15);
+    c4->SetLogz();
+    hAvgAngle->Draw("COLZ");
+    c4->SaveAs("reconstruction_log.png");
+
+    std::cout << "Success! 4 images created." << std::endl;
 }
