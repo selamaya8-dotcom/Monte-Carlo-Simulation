@@ -5,15 +5,21 @@
 
 class DetectorConstruction;
 
-class ActionInitialization : public G4VUserActionInitialization {
-    public:
-        ActionInitialization(DetectorConstruction* detector);
-        virtual ~ActionInitialization();
+/**
+ * @brief Registers user action classes to the Geant4 kernel.
+ * BuildForMaster() is used for global run accounting (Multi-threading).
+ * Build() is used to define actions for individual worker threads.
+ */
+class ActionInitialization : public G4VUserActionInitialization 
+{
+  public:
+    ActionInitialization(DetectorConstruction* detector);
+    virtual ~ActionInitialization() override;
 
-        virtual void BuildForMaster() const;
-        virtual void Build() const override;
+    virtual void BuildForMaster() const override;
+    virtual void Build() const override;
 
-    private:
+  private:
     DetectorConstruction* fDetector;
 };
 
