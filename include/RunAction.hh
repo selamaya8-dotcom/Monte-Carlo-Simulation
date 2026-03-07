@@ -1,22 +1,21 @@
-// RunAction.hh
 #ifndef RunAction_h
 #define RunAction_h 1
 
 #include "G4UserRunAction.hh"
+#include "globals.hh"
 
-class HistoManager;
-
+/**
+ * @brief Manages the start and end of a simulation run.
+ * Responsible for initializing the CSV output file and reporting run statistics.
+ */
 class RunAction : public G4UserRunAction
 {
 public:
-  RunAction();
-  virtual ~RunAction();
+    RunAction();
+    virtual ~RunAction() override;
 
-  virtual void BeginOfRunAction(const G4Run*) override;
-  virtual void EndOfRunAction(const G4Run*) override;
-
-private:
-  HistoManager* fHistoManager = nullptr;
+    virtual void BeginOfRunAction(const G4Run* run) override;
+    virtual void EndOfRunAction(const G4Run* run) override;
 };
 
 #endif
