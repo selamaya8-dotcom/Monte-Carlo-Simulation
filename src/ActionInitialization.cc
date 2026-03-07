@@ -3,38 +3,31 @@
 #include "RunAction.hh"
 #include "EventAction.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 ActionInitialization::ActionInitialization(DetectorConstruction* detector)
  : G4VUserActionInitialization(),
    fDetector(detector)
 {}
 
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 ActionInitialization::~ActionInitialization()
 {}
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-
 void ActionInitialization::BuildForMaster() const
 {
+  // Master thread only handles RunAction (for merging global results)
   RunAction* runAction = new RunAction();
   SetUserAction(runAction);
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void ActionInitialization::Build() const {
-    // Create the primary generator for each thread
+    // Primary Generator: Sources particles for each thread
     PrimaryGeneratorAction* primary = new PrimaryGeneratorAction(fDetector);
     SetUserAction(primary);
 
-    // Add other user actions here
+    // RunAction: Handles start/end of simulation runs
     RunAction* runAction = new RunAction();
     SetUserAction(runAction);
 
+    // EventAction: Handles data collection at the end of each event
     EventAction* event = new EventAction();
     SetUserAction(event);
 
