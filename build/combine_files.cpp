@@ -7,26 +7,20 @@
 
 namespace fs = std::filesystem;
 
-int main() {
-    std::string prefix = "accumulated_20.0_pid";
-    std::string output_filename = "final_accumulated.csv";
-
+// Function to consolidate files based on a specific prefix
+void consolidate(const std::string& prefix, const std::string& output_filename) {
     std::ofstream outfile(output_filename);
     if (!outfile.is_open()) {
-        std::cerr << "Error: Could not create output file." << std::endl;
-        return 1;
+        std::cerr << "Error: Could not create output file: " << output_filename << std::endl;
+        return;
     }
 
     bool header_written = false;
     int files_processed = 0;
 
-    std::cout << "Starting consolidation..." << std::endl;
-
-    // Iterate through files in the current directory
     for (const auto& entry : fs::directory_iterator(fs::current_path())) {
         std::string filename = entry.path().filename().string();
 
-        // Check if file starts with the specified prefix
         if (filename.rfind(prefix, 0) == 0) {
             std::ifstream infile(entry.path());
             if (!infile.is_open()) {
@@ -38,36 +32,46 @@ int main() {
             bool is_first_line = true;
 
             while (std::getline(infile, line)) {
-                // Handle the header logic
                 if (is_first_line) {
                     if (!header_written) {
                         outfile << line << "\n";
                         header_written = true;
                     }
                     is_first_line = false;
-                    continue; // Skip the header for all subsequent files
+                    continue;
                 }
 
-                // Write data line if it's not empty
                 if (!line.empty()) {
                     outfile << line << "\n";
                 }
             }
-
-            std::cout << "Processed: " << filename << std::endl;
             files_processed++;
             infile.close();
         }
     }
 
     outfile.close();
-
     if (files_processed > 0) {
-        std::cout << "Success! Created '" << output_filename
-                  << "' using " << files_processed << " files." << std::endl;
+        std::cout << "Successfully consolidated " << files_processed
+                  << " files into '" << output_filename << "'" << std::endl;
     } else {
-        std::cout << "No files found matching prefix: " << prefix << std::endl;
+        std::cout << "No files found for prefix: " << prefix << std::endl;
     }
+}
+
+int main() {
+    // 1. Process Physics Data
+    std::string phys_prefix = "accumulated_"; // Catches any density
+    std::string phys_output = "final_accumulated_physics.csv";
+
+    // 2. Process Spectrum Data
+    std::string spec_prefix = "spectrum_accumulated_";
+    std::string spec_output = "final_accumulated_spectrum.csv";
+
+    std::cout << "Starting final consolidation..." << std::endl;
+
+    consolidate(phys_prefix, phys_output);
+    consolidate(spec_prefix, spec_output);
 
     return 0;
 }

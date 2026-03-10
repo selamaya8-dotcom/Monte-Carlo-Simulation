@@ -12,6 +12,9 @@ runs=$2
 # Use the Process ID ($$) to make filenames unique for this instance
 instance_id=$$
 master_file="accumulated_${density}_pid${instance_id}.csv"
+# NEW: Master file for spectrum data
+spectrum_master="spectrum_accumulated_${density}_pid${instance_id}.csv"
+
 # Ensure the executables are compiled and ready
 make
 
@@ -32,20 +35,24 @@ do
   # 1. Run Geant4 simulation
   ./DroneMuonScan $tmp_macro
 
-  # 2. Run Merge script (Produces combined_hits_ID.csv)
+  # 2. Run Merge script (Now produces combined_hits_ID.csv AND spectrum_data_ID.csv)
   ./merge_muons
 
-  # 3. Append data to the Master CSV
+  # 3. Append data to the Master Physics CSV
   if [ "$i" -eq 1 ]; then
-    # For the first run, keep the header
     cat "combined_hits_${unique_run_id}.csv" > "$master_file"
+    # NEW: First run, keep the header for spectrum
+    cat "spectrum_data_${unique_run_id}.csv" > "$spectrum_master"
   else
-    # For subsequent runs, skip the header to keep the CSV clean
     tail -n +2 "combined_hits_${unique_run_id}.csv" >> "$master_file"
+    # NEW: Subsequent runs, skip header for spectrum
+    tail -n +2 "spectrum_data_${unique_run_id}.csv" >> "$spectrum_master"
   fi
 
   # Cleanup individual run files to save disk space
-  rm $tmp_macro "hits_output_${unique_run_id}.csv" "combined_hits_${unique_run_id}.csv"
+  # Added spectrum_data cleanup to the list
+  rm $tmp_macro "hits_output_${unique_run_id}.csv" "combined_hits_${unique_run_id}.csv" "spectrum_data_${unique_run_id}.csv"
 done
 
-echo "${master_file} was created succesufully"
+echo "${master_file} was created successfully"
+echo "${spectrum_master} was created successfully"

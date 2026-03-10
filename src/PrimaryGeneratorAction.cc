@@ -44,70 +44,78 @@ G4double PrimaryGeneratorAction::GetMuonEnergy(G4double theta) {
 }
 
 // Improved Intersection Check: Standard Ray-Sphere Algebra
-G4bool RayIntersectsSphere(G4ThreeVector origin, G4ThreeVector dir,
-                           G4ThreeVector center, G4double radius) {
-    G4ThreeVector oc = origin - center;
-    G4double b = oc.dot(dir);
-    G4double c = oc.dot(oc) - radius * radius;
-    G4double discriminant = b*b - c;
+// Helper function: Slab method for Ray-Box intersection
+G4bool PrimaryGeneratorAction::DoesRayHitBox(G4ThreeVector origin, G4ThreeVector dir,
+                                             G4ThreeVector boxCenter, G4ThreeVector boxHalf) {
+    // Translate origin to box-local coordinates
+    G4ThreeVector relOrigin = origin - boxCenter;
 
-    if (discriminant < 0) return false;
+    G4double tMin = -kInfinity;
+    G4double tMax = kInfinity;
 
-    // Check if the intersection is in front of the ray
-    G4double t = -b - std::sqrt(discriminant);
-    if (t < 0) t = -b + std::sqrt(discriminant);
+    // Check intersection with each pair of planes (X, Y, Z)
+    for (int i = 0; i < 3; ++i) {
+        if (std::abs(dir[i]) < 1e-9) { // Ray is parallel to planes
+            if (std::abs(relOrigin[i]) > boxHalf[i]) return false;
+        } else {
+            G4double t1 = (-boxHalf[i] - relOrigin[i]) / dir[i];
+            G4double t2 = (boxHalf[i] - relOrigin[i]) / dir[i];
 
-    return t >= 0;
+            tMin = std::max(tMin, std::min(t1, t2));
+            tMax = std::min(tMax, std::max(t1, t2));
+        }
+    }
+    // Ray hits if the intersection interval is valid and in front of the ray
+    return tMax >= tMin && tMax > 0;
 }
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     G4ThreeVector detCenter = fDet->GetDetCenter();
-    G4double sphereRadius   = fDet->GetBuildingHalfSize().x();
-
-    // The height you requested
+    G4ThreeVector boxHalf = fDet->GetBuildingHalfSize();
     G4double generationHeight = 3.0 * m;
 
-    G4ThreeVector direction;
     G4ThreeVector sourcePos;
+    G4ThreeVector direction;
     G4double theta;
-    G4bool hitsTarget = false;
+    G4bool hitsStructure = false;
 
-    while(!hitsTarget) {
-        // 1. Sample Angle
-        theta = std::acos(std::pow(G4UniformRand(), 1.0/3.0));
+    // 1. Re-generation loop: Keep trying until a valid muon hits the box
+    while (!hitsStructure) {
+        // Sample Position on the plate
+        G4double xPos = detCenter.x() + (G4UniformRand() - 0.5) * 2.0 * boxHalf.x();
+        G4double zPos = detCenter.z() + (G4UniformRand() - 0.5) * 2.0 * boxHalf.z();
+        sourcePos.set(xPos, generationHeight, zPos);
+
+        // Sample Angle (cos^2 distribution) with 70 deg limit
+        G4double maxAngle = 70.0 * deg;
+        do {
+            theta = std::acos(std::pow(G4UniformRand(), 1.0/3.0));
+        } while (theta > maxAngle);
+
         G4double phi = 2.0 * M_PI * G4UniformRand();
-
         direction.set(
             std::sin(theta) * std::cos(phi),
             -std::cos(theta),
             std::sin(theta) * std::sin(phi)
         );
 
-        G4double projectionSpread = sphereRadius;
-
-        G4double xOffset = (G4UniformRand() - 0.5) * 2.0 * projectionSpread;
-        G4double zOffset = (G4UniformRand() - 0.5) * 2.0 * projectionSpread;
-
-        sourcePos.set(detCenter.x() + xOffset, generationHeight, detCenter.z() + zOffset);
-
-        // 3. Mathematical Check
-        if (RayIntersectsSphere(sourcePos, direction, detCenter, sphereRadius)) {
-            hitsTarget = true;
+        // 2. Check if this specific ray actually intersects the building
+        if (DoesRayHitBox(sourcePos, direction, detCenter, boxHalf)) {
+            hitsStructure = true;
         }
     }
 
+    // 3. Set properties once a valid ray is found
     G4double energy = GetMuonEnergy(theta);
-
-    // 2. Set the gun properties
-    fParticleGun->SetParticleEnergy(energy);
     fParticleGun->SetParticlePosition(sourcePos);
     fParticleGun->SetParticleMomentumDirection(direction);
+    fParticleGun->SetParticleEnergy(energy);
 
-    // 3. Pass both values to EventAction
+    // Pass to EventAction
     auto eventAction = (EventAction*)G4RunManager::GetRunManager()->GetUserEventAction();
     if (eventAction) {
         eventAction->SetGenAngle(theta);
-        eventAction->SetGenEnergy(energy); // Now 'energy' is defined!
+        eventAction->SetGenEnergy(energy);
     }
 
     fParticleGun->GeneratePrimaryVertex(event);

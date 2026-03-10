@@ -12,6 +12,8 @@ using namespace std;
 
 struct EventData {
     double totalEnergy = 0;
+    double energyA = 0;
+    double energyB = 0;
     double xA = 0, yA = 0, zA = 0;
     double genAngle = 0;
     double momXB = 0, momYB = 0, momZB = 0;
@@ -27,6 +29,7 @@ int main() {
 
     string inputFileName = id_str.empty() ? "hits_output.csv" : "hits_output_" + id_str + ".csv";
     string outputFileName = id_str.empty() ? "combined_hits.csv" : "combined_hits_" + id_str + ".csv";
+    string spectrumFileName = id_str.empty() ? "spectrum_data.csv" : "spectrum_data_" + id_str + ".csv";
 
     ifstream fin(inputFileName);
     if (!fin.is_open()) {
@@ -58,6 +61,7 @@ int main() {
             auto& data = events[eventID];
 
             // Always update energy and GenAngle for every hit in the event
+            double edep = stod(columns[8]);
             data.totalEnergy += stod(columns[8]);
             data.genAngle = stod(columns[9]);
             data.genEnergy = stod(columns[10]);
@@ -66,47 +70,59 @@ int main() {
                 data.xA = stod(columns[2]);
                 data.yA = stod(columns[3]);
                 data.zA = stod(columns[4]);
+                data.energyA += edep;
                 data.hasA = true;
             }
             else if (columns[0] == "B") {
                 data.momXB = stod(columns[5]);
                 data.momYB = stod(columns[6]);
                 data.momZB = stod(columns[7]);
+                data.energyB += edep;
                 data.hasB = true;
             }
         } catch (...) { continue; }
     }
     fin.close();
 
-    // 1. Update the header to include GenAngle
-    // 1. Update the header to include GenEnergy
+
     ofstream fout(outputFileName);
+    ofstream fspec(spectrumFileName);
+
     fout << "EventID,PosX,PosY,PosZ,ScatteringAngle,TotalEnergy,GenAngle,GenEnergy\n";
+    fspec << "EventID,EnergyA,EnergyB\n";
 
     int count = 0;
     for (auto const& item : events) {
         int id = item.first;
         const EventData& data = item.second;
 
-        if (data.hasA && data.hasB) {
+        // Logic Change: Check if BOTH detectors have energy >= 1.0 MeV
+        if (data.energyA >= 1.0 && data.energyB >= 1.0) {
+
+            fspec << id << "," << data.energyA << "," << data.energyB << "\n";
+
+            // 2. Perform physics calculations
             double finalTheta = std::acos(std::abs(data.momYB));
             double genAngleDeg = data.genAngle * radToDeg;
-            // Keep initial energy in MeV or convert if preferred
             double genEnergy = data.genEnergy;
             double scattering = std::abs(finalTheta - data.genAngle);
 
+            // 3. Save to combined hits file
             fout << id << ","
                  << data.xA << "," << data.yA << "," << data.zA << ","
                  << fixed << setprecision(8) << scattering << ","
                  << data.totalEnergy << ","
                  << genAngleDeg << ","
-                 << genEnergy << "\n"; // <--- Added GenEnergy here
+                 << genEnergy << "\n";
+
             count++;
         }
     }
     fout.close();
+    fspec.close();
     cout << "Processed " << events.size() << " unique events." << endl;
-    cout << "Saved " << count << " events to " << outputFileName << endl;
+    cout << "Saved " << count << " physics events to " << outputFileName << endl;
+    cout << "Saved spectrum data to " << spectrumFileName << endl;
 
     return 0;
 }

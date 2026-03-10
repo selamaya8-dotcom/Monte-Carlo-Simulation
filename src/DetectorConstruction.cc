@@ -91,7 +91,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
 
     // 3. Setup Detector (Define boxZ and detPlacement FIRST)
     G4double boxXY = 15*cm;
-    G4double boxZ = 25*cm; // Now it's declared
+    G4double boxZ = 5*cm;
     G4ThreeVector detPlacement = G4ThreeVector(0, (boxZ/2) + 0.5*m, 0); // Now it's declared
 
     fDetHx = boxXY/2;
@@ -105,7 +105,6 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
 
     G4Material* cardboard = nist->FindOrBuildMaterial("G4_AIR");
 
-    // SAFETY CHECK: If cardboard is null, define it manually so the code doesn't crash
     if (!cardboard) {
         G4Element* elC = nist->FindOrBuildElement("C");
         G4Element* elH = nist->FindOrBuildElement("H");
@@ -134,6 +133,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
     new G4PVPlacement(nullptr, G4ThreeVector(0, 0, -boxZ/2 + wallPadding + detZ/2), det2LV, "Det2", detLV, false, 0);
 
     // 4. Setup Sphere (Now we can use detPlacement and boxZ)
+    /* --- Commenting out Sphere ---
     G4double sphereRadius = 0.5 * m;
     G4double sphereY = detPlacement.y() + (boxZ/2) + 1.0*m + sphereRadius;
     G4ThreeVector finalSpherePos = G4ThreeVector(0, sphereY, 0);
@@ -146,7 +146,28 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
     auto concreteSphereSolid = new G4Sphere("ConcreteSphere", 0.*cm, sphereRadius, 0.*deg, 360.*deg, 0.*deg, 180.*deg);
     auto concreteSphereLogical = new G4LogicalVolume(concreteSphereSolid, Soil, "ConcreteSphereLV");
     new G4PVPlacement(nullptr, finalSpherePos, concreteSphereLogical, "ConcreteSphere", worldLV, false, 0);
+    ------------------------------- */
 
+    G4double cubeHalfSide = 0.5 * m;
+    G4double cubeY = detPlacement.y() + (boxZ/2) + 1.0*m + cubeHalfSide;
+    G4ThreeVector finalCubePos = G4ThreeVector(0, cubeY, 0);
+
+    // Update member variables for tracking/analysis
+    fBuildHx = cubeHalfSide;
+    fBuildHy = cubeHalfSide;
+    fBuildHz = cubeHalfSide;
+    fBuildCenter = finalCubePos;
+    
+    // New Cube Implementation
+    auto soilCubeSolid = new G4Box("SoilCube", cubeHalfSide, cubeHalfSide, cubeHalfSide);
+    auto soilCubeLogical = new G4LogicalVolume(soilCubeSolid, Soil, "SoilCubeLV");
+    new G4PVPlacement(nullptr,
+                      finalCubePos,
+                      soilCubeLogical,
+                      "SoilCube",
+                      worldLV,
+                      false,
+                      0);
     return worldPV;
 }
 
