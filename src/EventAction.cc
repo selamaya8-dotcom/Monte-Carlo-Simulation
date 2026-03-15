@@ -63,7 +63,8 @@ void EventAction::EndOfEventAction(const G4Event* event)
                     << hit->GetMomentum().x() << "," << hit->GetMomentum().y() << "," << hit->GetMomentum().z() << ","
                     << hit->GetEdep() << ","
                     << fGenAngle << ","
-                    << fGenEnergy << "\n";
+                    << fGenEnergy << ","
+                    << fGenPosition.x() << "," << fGenPosition.y() << "," << fGenPosition.z() << "\n";
         }
 
         // Write hits from Detector B
@@ -74,7 +75,9 @@ void EventAction::EndOfEventAction(const G4Event* event)
                     << hit->GetMomentum().x() << "," << hit->GetMomentum().y() << "," << hit->GetMomentum().z() << ","
                     << hit->GetEdep() << ","
                     << fGenAngle << ","
-                    << fGenEnergy << "\n";
+                    << fGenEnergy << ","
+                    << fGenPosition.x() << "," << fGenPosition.y() << "," << fGenPosition.z() << "\n";
+
         }
         outfile.close();
     }

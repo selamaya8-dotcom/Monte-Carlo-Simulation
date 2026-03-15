@@ -102,10 +102,10 @@ void PhysicsList::ConstructParticle()
 
 void PhysicsList::SetCuts()
 {
-  SetCutValue(0*mm, "proton");
-  SetCutValue(100*mm, "e-");
-  SetCutValue(100*mm, "e+");
-  SetCutValue(0*km, "gamma");
+  SetCutValue(1*cm, "proton");
+  SetCutValue(1*cm, "e-");
+  SetCutValue(1*cm, "e+");
+  SetCutValue(0.1*km, "gamma");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

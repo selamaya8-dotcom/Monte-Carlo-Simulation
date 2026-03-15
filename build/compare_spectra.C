@@ -23,7 +23,6 @@ void compare_spectra() {
     TCanvas *c1 = (TCanvas*)fExp->Get("c1");
     if (!c1) return;
 
-    // Define the pairing logic
     std::vector<std::pair<std::string, std::string>> pairs = {
         {"hDet1", "h_lecroy"},
         {"hDet2", "h2"}
@@ -36,7 +35,6 @@ void compare_spectra() {
         TH1F *hSim = (TH1F*)fSim->Get(simName.c_str());
         TH1D *hExp = (TH1D*)c1->GetPrimitive(expName.c_str());
 
-        // Search stack if direct primitive fails
         if (!hExp) {
             TIter next(c1->GetListOfPrimitives());
             TObject *obj;
@@ -50,37 +48,50 @@ void compare_spectra() {
 
         if (!hExp || !hSim) continue;
 
-        // Clone and Normalize (Area = 1)
         TH1D *hExpClone = (TH1D*)hExp->Clone(Form("%s_exp_norm", expName.c_str()));
-        TH1F *hSimClone = (TH1F*)hSim->Clone(Form("%s_sim_norm", simName.c_str()));
+        TH1D *hSimClone = (TH1D*)hSim->Clone(Form("%s_sim_norm", simName.c_str()));
+
+        // Normalize
         hExpClone->Scale(1.0 / hExpClone->Integral());
         hSimClone->Scale(1.0 / hSimClone->Integral());
 
-        // Visual Styling
         hExpClone->SetMarkerStyle(20);
         hExpClone->SetMarkerSize(0.6);
         hSimClone->SetLineColor(kRed);
         hSimClone->SetLineWidth(2);
 
-        // Canvas with Ratio Plot
         TCanvas *cOut = new TCanvas(Form("c_%s", simName.c_str()), "Validation", 800, 900);
         auto rp = new TRatioPlot(hSimClone, hExpClone);
         rp->Draw();
 
-        // Legend and KS Test
         rp->GetUpperPad()->cd();
-        double ksProb = hExpClone->KolmogorovTest(hSimClone);
 
-        TLegend *leg = new TLegend(0.45, 0.7, 0.88, 0.88);
-        leg->SetHeader(Form("Comparison: %s", simName.c_str()));
-        leg->AddEntry(hExpClone, "Experimental (Data)", "lep");
-        leg->AddEntry(hSimClone, "Simulation (Smeared)", "l");
-        leg->AddEntry((TObject*)0, Form("KS Probability: %.4f", ksProb), "");
+        // --- NEW STATISTICAL ANALYSIS ---
+        // 1. Chi2 Test (NORM flag for normalized histograms)
+        double chi2; int ndf; int igood;
+        double chi2Prob = hExpClone->Chi2TestX(hSimClone, chi2, ndf, igood, "NORM");
+
+        // 2. Shape Analysis (Mean and RMS)
+        double meanDiff = hExpClone->GetMean() - hSimClone->GetMean();
+        double rmsRatio = hExpClone->GetRMS() / hSimClone->GetRMS();
+
+        // Update Legend with multiple metrics
+        TLegend *leg = new TLegend(0.4, 0.65, 0.88, 0.88);
+        leg->SetTextSize(0.025);
+        leg->SetHeader(Form("Validation: %s", simName.c_str()));
+        leg->AddEntry(hExpClone, "Experiment", "lep");
+        leg->AddEntry(hSimClone, "Sim (Smeared)", "l");
+        leg->AddEntry((TObject*)0, Form("Chi2/ndf: %.2f / %d", chi2, ndf), "");
+        leg->AddEntry((TObject*)0, Form("Chi2 Prob: %.4f", chi2Prob), "");
+        leg->AddEntry((TObject*)0, Form("Mean Delta: %.3f V", meanDiff), "");
+        leg->AddEntry((TObject*)0, Form("RMS Ratio (Exp/Sim): %.3f", rmsRatio), "");
         leg->Draw();
 
         cOut->Update();
         cOut->SaveAs(Form("Comparison_%s.png", simName.c_str()));
 
-        std::cout << "Generated: Comparison_" << simName << ".png (KS: " << ksProb << ")" << std::endl;
+        std::cout << "\nResults for " << simName << ":" << std::endl;
+        std::cout << " - Chi2 Prob: " << chi2Prob << std::endl;
+        std::cout << " - RMS Ratio: " << rmsRatio << " (Target 1.0)" << std::endl;
     }
 }

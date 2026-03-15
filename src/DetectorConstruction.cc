@@ -85,9 +85,11 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
     auto worldPV = new G4PVPlacement(nullptr, {}, worldLV, "World", nullptr, false, 0);
     fWorldHx = worldS->GetXHalfLength();
 
+/*
     auto groundS = new G4Box("Ground", 50*m, 50*m, 50*m);
-    auto groundLV = new G4LogicalVolume(groundS, Soil, "Ground");
+    auto groundLV = new G4LogicalVolume(groundS, air, "Ground");
     new G4PVPlacement(nullptr, G4ThreeVector(0, -50*m, 0), groundLV, "Ground", worldLV, false, 0);
+*/
 
     // 3. Setup Detector (Define boxZ and detPlacement FIRST)
     G4double boxXY = 15*cm;
@@ -157,7 +159,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
     fBuildHy = cubeHalfSide;
     fBuildHz = cubeHalfSide;
     fBuildCenter = finalCubePos;
-    
+
     // New Cube Implementation
     auto soilCubeSolid = new G4Box("SoilCube", cubeHalfSide, cubeHalfSide, cubeHalfSide);
     auto soilCubeLogical = new G4LogicalVolume(soilCubeSolid, Soil, "SoilCubeLV");

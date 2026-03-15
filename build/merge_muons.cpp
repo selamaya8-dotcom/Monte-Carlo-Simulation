@@ -20,6 +20,7 @@ struct EventData {
     bool hasA = false;
     bool hasB = false;
     double genEnergy = 0;
+    double genPosX = 0, genPosY = 0, genPosZ = 0;
 };
 
 int main() {
@@ -52,9 +53,9 @@ int main() {
             columns.push_back(token);
         }
 
-        // We now expect 10 columns:
+        // We now expect 13 columns:
         // 0:Det, 1:EID, 2:X, 3:Y, 4:Z, 5:Mx, 6:My, 7:Mz, 8:Edep, 9:GenAngle
-        if (columns.size() < 11) continue;
+        if (columns.size() < 14) continue;
 
         try {
             int eventID = stoi(columns[1]);
@@ -65,6 +66,9 @@ int main() {
             data.totalEnergy += stod(columns[8]);
             data.genAngle = stod(columns[9]);
             data.genEnergy = stod(columns[10]);
+            data.genPosX = stod(columns[11]);
+            data.genPosY = stod(columns[12]);
+            data.genPosZ = stod(columns[13]);
 
             if (columns[0] == "A") {
                 data.xA = stod(columns[2]);
@@ -88,7 +92,7 @@ int main() {
     ofstream fout(outputFileName);
     ofstream fspec(spectrumFileName);
 
-    fout << "EventID,PosX,PosY,PosZ,ScatteringAngle,TotalEnergy,GenAngle,GenEnergy\n";
+    fout << "EventID,PosX,PosY,PosZ,ScatteringAngle,TotalEnergy,GenAngle,GenEnergy,GenPosX,GenPosY,GenPosZ\n";
     fspec << "EventID,EnergyA,EnergyB\n";
 
     int count = 0;
@@ -113,7 +117,8 @@ int main() {
                  << fixed << setprecision(8) << scattering << ","
                  << data.totalEnergy << ","
                  << genAngleDeg << ","
-                 << genEnergy << "\n";
+                 << genEnergy << ","
+                 << data.genPosX << "," << data.genPosY << "," << data.genPosZ << "\n";
 
             count++;
         }

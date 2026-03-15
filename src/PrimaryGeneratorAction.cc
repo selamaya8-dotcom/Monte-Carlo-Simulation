@@ -82,12 +82,12 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     // 1. Re-generation loop: Keep trying until a valid muon hits the box
     while (!hitsStructure) {
         // Sample Position on the plate
-        G4double xPos = detCenter.x() + (G4UniformRand() - 0.5) * 2.0 * boxHalf.x();
-        G4double zPos = detCenter.z() + (G4UniformRand() - 0.5) * 2.0 * boxHalf.z();
+        G4double xPos = detCenter.x() + (G4UniformRand() - 0.5) * 2.3 * boxHalf.x();
+        G4double zPos = detCenter.z() + (G4UniformRand() - 0.5) * 2.3 * boxHalf.z();
         sourcePos.set(xPos, generationHeight, zPos);
 
         // Sample Angle (cos^2 distribution) with 70 deg limit
-        G4double maxAngle = 70.0 * deg;
+        G4double maxAngle = 75.0 * deg;
         do {
             theta = std::acos(std::pow(G4UniformRand(), 1.0/3.0));
         } while (theta > maxAngle);
@@ -116,6 +116,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     if (eventAction) {
         eventAction->SetGenAngle(theta);
         eventAction->SetGenEnergy(energy);
+        eventAction->SetGenPosition(sourcePos);
     }
 
     fParticleGun->GeneratePrimaryVertex(event);

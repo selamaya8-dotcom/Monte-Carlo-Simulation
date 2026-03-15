@@ -105,9 +105,22 @@ int main(int argc, char* argv[]) {
     hDet1->Draw("HIST E");
     hDet2->Draw("HIST E SAME");
 
-    TLegend *leg = new TLegend(0.6, 0.7, 0.85, 0.85);
+    TLegend *leg = new TLegend(0.55, 0.65, 0.89, 0.89);
+    leg->SetMargin(0.2); // Adjusts the width of the colored boxes
+    leg->SetTextSize(0.025);
+
+    // Detector 1 Section
     leg->AddEntry(hDet1, "Detector 1", "f");
+    leg->AddEntry((TObject*)0, Form("  Mean: %.3f V", hDet1->GetMean()), "");
+    leg->AddEntry((TObject*)0, Form("  StdDev: %.3f V", hDet1->GetStdDev()), "");
+
+    // Add a small gap or separator if desired
+    leg->AddEntry((TObject*)0, "", "");
+
+    // Detector 2 Section
     leg->AddEntry(hDet2, "Detector 2", "f");
+    leg->AddEntry((TObject*)0, Form("  Mean: %.3f V", hDet2->GetMean()), "");
+    leg->AddEntry((TObject*)0, Form("  StdDev: %.3f V", hDet2->GetStdDev()), "");
     leg->Draw();
     c1->SaveAs("recreated_spectrum.png");
 
