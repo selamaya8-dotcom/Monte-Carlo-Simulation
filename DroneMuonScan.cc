@@ -1,72 +1,79 @@
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-#include "G4Types.hh"
-
 #include "G4RunManagerFactory.hh"
 #include "G4UImanager.hh"
+#include "G4VisExecutive.hh"
+#include "G4UIExecutive.hh"
 #include "G4SteppingVerbose.hh"
 #include "Randomize.hh"
-
 #include "CLHEP/Random/RanecuEngine.h"
 
 #include "DetectorConstruction.hh"
 #include "PhysicsList.hh"
 #include "ActionInitialization.hh"
 
-#include "G4UIExecutive.hh"
-#include "G4VisExecutive.hh"
+#include <ctime>
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+/**
+ * @brief Main function. 
+ * Usage: 
+ * ./simulation            (Interactive mode with GUI)
+ * ./simulation macro.mac  (Batch mode)
+ */
+int main(int argc, char** argv) {
 
-int main(int argc,char** argv) {
+    // 1. Setup UI Session (Interactive mode if no macro argument is provided)
+    G4UIExecutive* ui = nullptr;
+    if (argc == 1) {
+        ui = new G4UIExecutive(argc, argv);
+    }
 
-  //detect interactive mode (if no arguments) and define UI session
-  G4UIExecutive* ui = 0;
-  if (argc == 1) ui = new G4UIExecutive(argc,argv);
+    // 2. Random Engine Configuration
+    // Use RanecuEngine and seed it using the current system time
+    G4Random::setTheEngine(new CLHEP::RanecuEngine);
+    
+    long seeds[2];
+    time_t systime = time(nullptr);
+    seeds[0] = (long)systime;
+    seeds[1] = (long)(systime * G4UniformRand()); 
+    G4Random::setTheSeeds(seeds);
 
-  //choose the Random engine
-  G4Random::setTheEngine(new CLHEP::RanecuEngine);
+    // 3. Verbosity Settings
+    G4SteppingVerbose::UseBestUnit(4);
 
-  //use G4SteppingVerboseWithUnits
-  G4int precision = 4;
-  G4SteppingVerbose::UseBestUnit(precision);
+    // 4. Construct the Run Manager (Auto-selects MT or Sequential based on build)
+    auto* runManager = G4RunManagerFactory::CreateRunManager();
+    runManager->SetNumberOfThreads(1); // Set to 1 for consistency with non-MT ActionInitialization
 
-  //construct the run manager
-  auto runManager = G4RunManagerFactory::CreateRunManager();
-  runManager->SetNumberOfThreads(1);
+    // 5. Mandatory Initialization Classes
+    auto* detConstruction = new DetectorConstruction();
+    runManager->SetUserInitialization(detConstruction);
 
-  //set mandatory initialization classes
-  DetectorConstruction* det= new DetectorConstruction;
-  runManager->SetUserInitialization(det);
+    auto* physicsList = new PhysicsList();
+    runManager->SetUserInitialization(physicsList);
 
-  PhysicsList* phys = new PhysicsList;
-  runManager->SetUserInitialization(phys);
+    auto* actionInit = new ActionInitialization(detConstruction);
+    runManager->SetUserInitialization(actionInit);
 
-  runManager->SetUserInitialization(new ActionInitialization(det));
+    // 6. Visualization and UI Management
+    auto* visManager = new G4VisExecutive;
+    visManager->Initialize();
 
-  //initialize visualization
-  G4VisManager* visManager = nullptr;
+    auto* UImanager = G4UImanager::GetUIpointer();
 
-  // get the pointer to the User Interface manager
-  G4UImanager* UImanager = G4UImanager::GetUIpointer();
+    if (ui) {
+        // Interactive Mode: Execute startup macro and start UI session
+        UImanager->ApplyCommand("/control/execute debug.mac");
+        ui->SessionStart();
+        delete ui;
+    } else {
+        // Batch Mode: Execute the macro file provided in the command line argument
+        G4String command = "/control/execute ";
+        G4String fileName = argv[1];
+        UImanager->ApplyCommand(command + fileName);
+    }
 
+    // 7. Job Termination
+    delete visManager;
+    delete runManager;
 
-  if (ui)  {
-   //interactive mode
-   visManager = new G4VisExecutive;
-   visManager->Initialize();
-   UImanager->ApplyCommand("/control/execute debug.mac");
-   ui->SessionStart();
-   delete ui;
-  }
-  else  {
-   //batch mode
-   G4String command = "/control/execute ";
-   G4String fileName = argv[1];
-   UImanager->ApplyCommand(command+fileName);
-  }
-
-  //job termination
-  delete visManager;
-  delete runManager;
+    return 0;
 }
