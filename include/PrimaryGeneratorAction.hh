@@ -2,50 +2,35 @@
 #define PrimaryGeneratorAction_h 1
 
 #include "G4VUserPrimaryGeneratorAction.hh"
-#include "G4ParticleGun.hh"
+#include "G4ThreeVector.hh"
 #include "globals.hh"
 
-class DetectorConstruction;  // forward declaration
-class G4VPhysicalVolume;
-class G4VSolid;
+class G4ParticleGun;
 class G4Event;
-class G4Box;
+class DetectorConstruction;
 
+/**
+ * @brief Generates primary muons with energy and angular distributions 
+ * representative of sea-level cosmic rays.
+ */
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
-public:
+  public:
     PrimaryGeneratorAction(const DetectorConstruction* det);
-    ~PrimaryGeneratorAction();
+    virtual ~PrimaryGeneratorAction();
 
+    // Main method called at the beginning of every event
+    virtual void GeneratePrimaries(G4Event* event) override;
 
-    virtual void GeneratePrimaries(G4Event*);
-
-private:
+  private:
     G4ParticleGun* fParticleGun;
     const DetectorConstruction* fDet;
 
-    static constexpr double     pi  = 3.14159265358979323846;
+    // Calculates muon energy based on the Smith-Duller / Gaisser distribution
+    G4double GetMuonEnergy(G4double theta);
 
-
-    G4bool ComputeMinimalConeForBox(const G4ThreeVector& apexWorld, const G4ThreeVector& boxPos, G4ThreeVector boxHalfs,
-        G4ThreeVector& axisOut, G4double& thetaOut) const;
-
-
-    // Helpers
-    static G4bool PointInOBB(const G4ThreeVector& P,
-        const G4ThreeVector& C, const G4ThreeVector& half,
-        const G4ThreeVector& ex, const G4ThreeVector& ey, const G4ThreeVector& ez);
-
-    static void BoxVertices(const G4ThreeVector& C, const G4ThreeVector& half,
-        const G4ThreeVector& ex, const G4ThreeVector& ey, const G4ThreeVector& ez,
-        std::array<G4ThreeVector,8>& V);
-
-    G4ThreeVector SampleDirectionInCone(const G4ThreeVector& axis_unit,
-            G4double alpha);
-
-    G4ThreeVector      fApex{0,0,0};
-    G4VPhysicalVolume* fTargetBoxPV{nullptr};
+    // Determines if a generated muon trajectory will actually strike the detector geometry
+    G4bool DoesRayHitBox(G4ThreeVector origin, G4ThreeVector dir,
+                         G4ThreeVector boxCenter, G4ThreeVector boxHalf);
 };
-
-
 
 #endif
