@@ -1,96 +1,67 @@
 #include "DetectorConstruction.hh"
+#include "MuonDetectorA.hh"
+#include "MuonDetectorB.hh"
+
 #include "G4Box.hh"
+#include "G4Sphere.hh"
+#include "G4SubtractionSolid.hh"
 #include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
 #include "G4NistManager.hh"
-#include "G4SystemOfUnits.hh"
-#include "MuonDetectorA.hh"
-#include "MuonDetectorB.hh"
-#include "G4SubtractionSolid.hh"
 #include "G4SDManager.hh"
 #include "G4GenericMessenger.hh"
 
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 DetectorConstruction::DetectorConstruction()
-:G4VUserDetectorConstruction(), fDetectorLogic(0) , det1LV(0), det2LV(0), fSoilDensity(0.*g/cm3)
+: G4VUserDetectorConstruction(), 
+  fSoilDensity(2.0*g/cm3), fDetHx(0), fDetHy(0), fDetHz(0),
+  fBuildHx(0), fBuildHy(0), fBuildHz(0)
 {
-  fMessenger = new G4GenericMessenger(this, "/soil/", "Soil density control");
-  fMessenger->DeclarePropertyWithUnit("density", "g/cm3", fSoilDensity, "Soil density in g/cm3");
-
-  G4cout << "DENSITY!!!!   =" << fSoilDensity/(g/cm3)<< G4endl;
+    // Define UI command for soil density
+    fMessenger = new G4GenericMessenger(this, "/soil/", "Soil density control");
+    fMessenger->DeclarePropertyWithUnit("density", "g/cm3", fSoilDensity, "Soil density in g/cm3");
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-DetectorConstruction::~DetectorConstruction()
-{}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-G4VPhysicalVolume* DetectorConstruction::Construct()
-{
-  return ConstructVolumes();
+DetectorConstruction::~DetectorConstruction() {
+    delete fMessenger;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
-{
-    DefineMaterials();
+void DetectorConstruction::DefineMaterials() {
     auto nist = G4NistManager::Instance();
-    /*
-    G4double protons = 6, mole = 12.0*g/mole, density = 16.0*g/cm3; //mole and protons from carbon
-    G4Material* concrete = new G4Material("Carbon", protons, mole, density);
-    //auto concrete = nist->FindOrBuildMaterial("G4_Np");
-    auto air      = nist->FindOrBuildMaterial("G4_AIR");
-    */
-    // Define basic elements
-    G4Element* elSi = new G4Element("Silicon", "Si", 14., 28.0855*g/mole);
-    G4Element* elMg = new G4Element("Magnesium", "Mg", 12., 24.305*g/mole);
-    G4Element* elAl = new G4Element("Aluminum", "Al", 13., 26.9815*g/mole);
-    G4Element* elCa = new G4Element("Calcium", "Ca", 20., 40.078*g/mole);
-    G4Element* elFe = new G4Element("Iron", "Fe", 26., 55.845*g/mole);
-    G4Element* elNa = new G4Element("Sodium", "Na", 11., 22.9897*g/mole);
-    G4Element* elTi = new G4Element("Titanium", "Ti", 22., 47.867*g/mole);
-    G4Element* elO  = new G4Element("Oxygen", "O", 8., 16.00*g/mole);
 
-    // Define compound oxides
-    G4Material* SiO2 = new G4Material("SiliconDioxide", 2.65*g/cm3, 2);
-    SiO2->AddElement(elSi, 1);
-    SiO2->AddElement(elO, 2);
+    // Define Elements for Soil
+    G4Element* elSi = nist->FindOrBuildElement("Si");
+    G4Element* elMg = nist->FindOrBuildElement("Mg");
+    G4Element* elAl = nist->FindOrBuildElement("Al");
+    G4Element* elCa = nist->FindOrBuildElement("Ca");
+    G4Element* elFe = nist->FindOrBuildElement("Fe");
+    G4Element* elNa = nist->FindOrBuildElement("Na");
+    G4Element* elTi = nist->FindOrBuildElement("Ti");
+    G4Element* elO  = nist->FindOrBuildElement("O");
 
-    G4Material* MgO = new G4Material("MagnesiumOxide", 3.58*g/cm3, 2);
-    MgO->AddElement(elMg, 1);
-    MgO->AddElement(elO, 1);
+    // Define Component Oxides
+    G4Material* SiO2 = new G4Material("SiO2", 2.65*g/cm3, 2);
+    SiO2->AddElement(elSi, 1); SiO2->AddElement(elO, 2);
 
-    G4Material* Al2O3 = new G4Material("AluminumOxide", 3.95*g/cm3, 2);
-    Al2O3->AddElement(elAl, 2);
-    Al2O3->AddElement(elO, 3);
+    G4Material* MgO = new G4Material("MgO", 3.58*g/cm3, 2);
+    MgO->AddElement(elMg, 1); MgO->AddElement(elO, 1);
 
-    G4Material* CaO = new G4Material("CalciumOxide", 3.34*g/cm3, 2);
-    CaO->AddElement(elCa, 1);
-    CaO->AddElement(elO, 1);
+    G4Material* Al2O3 = new G4Material("Al2O3", 3.95*g/cm3, 2);
+    Al2O3->AddElement(elAl, 2); Al2O3->AddElement(elO, 3);
 
-    G4Material* FeO = new G4Material("IronOxide", 5.70*g/cm3, 2);
-    FeO->AddElement(elFe, 1);
-    FeO->AddElement(elO, 1);
+    G4Material* CaO = new G4Material("CaO", 3.34*g/cm3, 2);
+    CaO->AddElement(elCa, 1); CaO->AddElement(elO, 1);
 
-    G4Material* Na2O = new G4Material("SodiumOxide", 2.27*g/cm3, 2);
-    Na2O->AddElement(elNa, 2);
-    Na2O->AddElement(elO, 1);
+    G4Material* FeO = new G4Material("FeO", 5.70*g/cm3, 2);
+    FeO->AddElement(elFe, 1); FeO->AddElement(elO, 1);
 
-    G4Material* TiO2 = new G4Material("TitaniumDioxide", 4.23*g/cm3, 2);
-    TiO2->AddElement(elTi, 1);
-    TiO2->AddElement(elO, 2);
+    G4Material* Na2O = new G4Material("Na2O", 2.27*g/cm3, 2);
+    Na2O->AddElement(elNa, 2); Na2O->AddElement(elO, 1);
 
-    // Define the soil mixture
-    // G4Material* Soil = new G4Material("Soil", 2.0*g/cm3, 7);//fSoilDensity
+    G4Material* TiO2 = new G4Material("TiO2", 4.23*g/cm3, 2);
+    TiO2->AddElement(elTi, 1); TiO2->AddElement(elO, 2);
 
-    G4cout << "HERE!!!!! " << fSoilDensity/(g/cm3) << " g/cm3" << G4endl;
-
-    G4Material* Soil = new G4Material("Soil", fSoilDensity, 7);//fSoilDensity
+    // Create Soil Mixture
+    G4Material* Soil = new G4Material("Soil", fSoilDensity, 7);
     Soil->AddMaterial(SiO2, 45.0*perCent);
     Soil->AddMaterial(MgO, 35.0*perCent);
     Soil->AddMaterial(Al2O3, 7.0*perCent);
@@ -99,114 +70,84 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
     Soil->AddMaterial(Na2O, 0.7*perCent);
     Soil->AddMaterial(TiO2, 0.3*perCent);
 
-    auto air      = nist->FindOrBuildMaterial("G4_AIR");
+    // Define Cardboard (Cellulose)
+    G4Material* cardboard = new G4Material("Cardboard", 0.7*g/cm3, 3);
+    cardboard->AddElement(nist->FindOrBuildElement("C"), 6);
+    cardboard->AddElement(nist->FindOrBuildElement("H"), 10);
+    cardboard->AddElement(nist->FindOrBuildElement("O"), 5);
+}
 
+G4VPhysicalVolume* DetectorConstruction::Construct() {
+    return ConstructVolumes();
+}
 
-    // World
+G4VPhysicalVolume* DetectorConstruction::ConstructVolumes() {
+    DefineMaterials();
+    auto nist = G4NistManager::Instance();
+    auto air  = nist->FindOrBuildMaterial("G4_AIR");
+    auto soil = G4Material::GetMaterial("Soil");
+
+    // 1. World
     auto worldS = new G4Box("World", 50*m, 50*m, 50*m);
     auto worldLV = new G4LogicalVolume(worldS, air, "World");
     auto worldPV = new G4PVPlacement(nullptr, {}, worldLV, "World", nullptr, false, 0);
-    fWorldHx = worldS->GetXHalfLength();
 
-    // Ground
-    auto groundS = new G4Box("Ground", 50*m, 50*m, 50*m);
-    auto groundLV = new G4LogicalVolume(groundS, Soil, "Ground");
-    new G4PVPlacement(nullptr, G4ThreeVector(0, -50*m, 0), groundLV, "Ground", worldLV, false, 0);
+    // 2. Detector Enclosure (Cardboard Box)
+    G4double boxXY = 15*cm;
+    G4double boxZ  = 5*cm;
+    fDetCenter = G4ThreeVector(0, (boxZ/2.0) + 0.5*m, 0);
+    
+    // Member variables for the Primary Generator's hit-check
+    fDetHx = boxXY/2.0; fDetHy = boxZ/2.0; fDetHz = boxXY/2.0;
 
-    // Building
-    /*
-    const G4double t = 3.*m; // wall thickness
-    const G4double eps = 1.*mm; // avoid coincident surfaces
-    const G4double hx = 30.*m;
-    const G4double hy = 20.*m;
-    const G4double hz = 20.*m;
-    const G4ThreeVector Bpos(40.*m, 20.*m, -60.*m); // Building
-
-    auto outer = new G4Box("B_outer", hx, hy, hz);
-    auto inner = new G4Box("B_inner", hx - t - eps, hy - t - eps, hz - t - eps);
-    auto shellSolid = new G4SubtractionSolid("BuildingShell", outer, inner);
-    auto shellLV = new G4LogicalVolume(shellSolid, Soil, "Building");
-    auto outerLV    = new G4LogicalVolume(outer, air, "OuterLV");
-    auto shellPV  = new G4PVPlacement(nullptr, Bpos, shellLV, "Building", worldLV, false, 0);
-    fBuildHx = outer->GetXHalfLength();
-    fBuildHy = outer->GetYHalfLength();
-    fBuildHz = outer->GetZHalfLength();
-    fBuildCenter = Bpos;
-    */
-
-    // Concrete block 1m x 1m x 1m
-    G4double blockSize = 1.0*m;
-    auto concreteBlockSolid = new G4Box("ConcreteBlock", 0.5*blockSize, 0.5*blockSize, 0.5*blockSize);
-    auto concreteMaterial = Soil;
-    auto concreteBlockLogical = new G4LogicalVolume(concreteBlockSolid, concreteMaterial, "ConcreteBlockLV");
-    G4ThreeVector concreteBlockPosition = G4ThreeVector(0, 0.5*m, -0.5*m);
-    new G4PVPlacement(nullptr, concreteBlockPosition, concreteBlockLogical, "ConcreteBlock", worldLV, false, 0);
-
-
-
-    /*
-    auto detS = new G4Box("Det", 20*m, 20*m, 20*m);
-    fDetectorLogic = new G4LogicalVolume(detS, nist->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE"), "Det");
-    G4ThreeVector detPlacment = G4ThreeVector(0*m, 20*m, 50*m);
-    new G4PVPlacement(nullptr, detPlacment, fDetectorLogic, "Det", worldLV, false, 0);
-    fDetHx = detS->GetXHalfLength();
-    fDetHy = detS->GetYHalfLength();
-    fDetHz = detS->GetZHalfLength();
-    fDetCenter = detPlacment;
-    */
-
-    // Detector
-
-
-    G4double boxXY = 11*cm, boxZ = 52*cm;
     auto outerBox = new G4Box("OuterBox", boxXY/2, boxXY/2, boxZ/2);
-    auto innerBox = new G4Box("InnerBox", boxXY/2 - 1*cm, boxXY/2 - 1*cm, boxZ/2  - 1*cm);
-    auto detS = new G4SubtractionSolid("Shell", outerBox, innerBox, nullptr, G4ThreeVector(0,0,0));
-    G4Material* cardboard = nist->FindOrBuildMaterial("G4_WOOD");
-    if (!cardboard) {
-      G4Element* C = nist->FindOrBuildElement("C");
-      G4Element* H = nist->FindOrBuildElement("H");
-      G4Element* O = nist->FindOrBuildElement("O");
-      cardboard = new G4Material("CardBoard", 0.7*g/cm3, 3);
-      cardboard->AddElement(C, 6);
-      cardboard->AddElement(H, 10);
-      cardboard->AddElement(O, 5);
-    }
-    auto detLV = new G4LogicalVolume(detS, cardboard, "Box");
-    G4ThreeVector detPlacment = G4ThreeVector(0, boxXY/2, boxZ/2); //boxXY/2, boxZ/2
-    new G4PVPlacement(nullptr, detPlacment, detLV, "Box", worldLV, false, 0);
-    fDetHx = boxXY/2;
-    fDetHy = boxXY/2;
-    fDetHz = boxZ/2;
-    fDetCenter = detPlacment;
+    auto innerBox = new G4Box("InnerBox", boxXY/2 - 2*cm, boxXY/2 - 2*cm, boxZ/2 - 2*cm);
+    auto detS     = new G4SubtractionSolid("BoxShell", outerBox, innerBox);
+    auto detLV    = new G4LogicalVolume(detS, G4Material::GetMaterial("Cardboard"), "BoxLV");
 
-    G4double detXY = 100*cm, detZ = 25*cm;//10,2
-    auto det1S = new G4Box("Det1", detXY/2, detXY/2, detZ/2);
-    auto det2S = new G4Box("Det2", detXY/2, detXY/2, detZ/2);
-    det1LV = new G4LogicalVolume(det1S, nist->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE"), "Det1");
-    det2LV = new G4LogicalVolume(det2S, nist->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE"), "Det2");
+    G4RotationMatrix* rotX90 = new G4RotationMatrix();
+    rotX90->rotateX(90.*deg);
+    new G4PVPlacement(rotX90, fDetCenter, detLV, "BoxPV", worldLV, false, 0);
 
-    G4double wall = 1*cm;
-    G4ThreeVector det1Placment = G4ThreeVector(wall, wall, boxZ/2-wall-detZ/2);
-    G4ThreeVector det2Placment = G4ThreeVector(wall, wall, -boxZ/2+wall+detZ/2);
-    new G4PVPlacement(nullptr, det1Placment, det1LV, "Det1", detLV, false, 0);
-    new G4PVPlacement(nullptr, det2Placment, det2LV, "Det2", detLV, false, 0);
+    // 3. Sensitive Scintillator Plates
+    G4double detXY = 10*cm, detZ = 2*cm;
+    auto detS_Plate = new G4Box("ScintPlate", detXY/2, detXY/2, detZ/2);
+    auto scintMat   = nist->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE");
+
+    det1LV = new G4LogicalVolume(detS_Plate, scintMat, "Det1LV");
+    det2LV = new G4LogicalVolume(detS_Plate, scintMat, "Det2LV");
+
+    G4double padding = 1*cm;
+    new G4PVPlacement(nullptr, {0, 0,  boxZ/2 - padding - detZ/2}, det1LV, "Det1PV", detLV, false, 0);
+    new G4PVPlacement(nullptr, {0, 0, -boxZ/2 + padding + detZ/2}, det2LV, "Det2PV", detLV, false, 0);
+
+    // 4. Target Volume (Soil Cube or Sphere)
+    G4double cubeHalf = 0.5 * m;
+    G4double cubeY    = fDetCenter.y() + (boxZ/2) + 1.0*m + cubeHalf;
+    fBuildCenter      = G4ThreeVector(0, cubeY, 0);
+    fBuildHx = fBuildHy = fBuildHz = cubeHalf;
+
+    /* --- OPTION: Sphere Target ---
+    G4double sphereRadius = 0.5 * m;
+    auto targetS = new G4Sphere("Target", 0, sphereRadius, 0, 360*deg, 0, 180*deg);
+    fBuildHx = fBuildHy = fBuildHz = sphereRadius;
+    ------------------------------ */
+
+    auto targetS  = new G4Box("SoilTarget", cubeHalf, cubeHalf, cubeHalf);
+    auto targetLV = new G4LogicalVolume(targetS, soil, "TargetLV");
+    new G4PVPlacement(nullptr, fBuildCenter, targetLV, "TargetPV", worldLV, false, 0);
 
     return worldPV;
 }
 
 void DetectorConstruction::ConstructSDandField() {
-    // Create separate sensitive detectors for each logical volume
-    auto muonSD_A = new MuonDetectorA("MuonSD_A");
-    auto muonSD_B = new MuonDetectorB("MuonSD_B");
     auto sdManager = G4SDManager::GetSDMpointer();
+
+    auto muonSD_A = new MuonDetectorA("MuonSD_A");
     sdManager->AddNewDetector(muonSD_A);
-    sdManager->AddNewDetector(muonSD_B);
-
     det1LV->SetSensitiveDetector(muonSD_A);
-    det2LV->SetSensitiveDetector(muonSD_B);
-}
 
-void DetectorConstruction::DefineMaterials() {
-    G4NistManager::Instance();
+    auto muonSD_B = new MuonDetectorB("MuonSD_B");
+    sdManager->AddNewDetector(muonSD_B);
+    det2LV->SetSensitiveDetector(muonSD_B);
 }
