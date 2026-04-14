@@ -53,17 +53,14 @@ int main() {
             columns.push_back(token);
         }
 
-        // We now expect 13 columns:
-        // 0:Det, 1:EID, 2:X, 3:Y, 4:Z, 5:Mx, 6:My, 7:Mz, 8:Edep, 9:GenAngle
         if (columns.size() < 14) continue;
 
         try {
             int eventID = stoi(columns[1]);
             auto& data = events[eventID];
 
-            // Always update energy and GenAngle for every hit in the event
             double edep = stod(columns[8]);
-            data.totalEnergy += stod(columns[8]);
+            data.totalEnergy += edep;
             data.genAngle = stod(columns[9]);
             data.genEnergy = stod(columns[10]);
             data.genPosX = stod(columns[11]);
@@ -88,7 +85,6 @@ int main() {
     }
     fin.close();
 
-
     ofstream fout(outputFileName);
     ofstream fspec(spectrumFileName);
 
@@ -100,24 +96,18 @@ int main() {
         int id = item.first;
         const EventData& data = item.second;
 
-        // Logic Change: Check if BOTH detectors have energy >= 1.0 MeV
         if (data.energyA >= 1.0 && data.energyB >= 1.0) {
-
             fspec << id << "," << data.energyA << "," << data.energyB << "\n";
 
-            // 2. Perform physics calculations
             double finalTheta = std::acos(std::abs(data.momYB));
-            double genAngleDeg = data.genAngle * radToDeg;
-            double genEnergy = data.genEnergy;
             double scattering = std::abs(finalTheta - data.genAngle);
 
-            // 3. Save to combined hits file
             fout << id << ","
                  << data.xA << "," << data.yA << "," << data.zA << ","
                  << fixed << setprecision(8) << scattering << ","
                  << data.totalEnergy << ","
-                 << genAngleDeg << ","
-                 << genEnergy << ","
+                 << data.genAngle * radToDeg << ","
+                 << data.genEnergy << ","
                  << data.genPosX << "," << data.genPosY << "," << data.genPosZ << "\n";
 
             count++;
@@ -125,6 +115,7 @@ int main() {
     }
     fout.close();
     fspec.close();
+
     cout << "Processed " << events.size() << " unique events." << endl;
     cout << "Saved " << count << " physics events to " << outputFileName << endl;
     cout << "Saved spectrum data to " << spectrumFileName << endl;
