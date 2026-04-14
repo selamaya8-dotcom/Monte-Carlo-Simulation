@@ -5,9 +5,6 @@
 #include <TLegend.h>
 #include <TStyle.h>
 #include <THStack.h>
-#include <TRatioPlot.h>
-#include <iostream>
-#include <vector>
 
 void compare_spectra() {
     gStyle->SetOptStat(0);
@@ -15,32 +12,28 @@ void compare_spectra() {
     TFile *fExp = TFile::Open("Spectrum.root");
     TFile *fSim = TFile::Open("detector_spectrum.root");
 
-    if (!fExp || fExp->IsZombie() || !fSim || fSim->IsZombie()) {
-        std::cerr << "Error: Check if Spectrum.root and detector_spectrum.root exist." << std::endl;
-        return;
-    }
-
+    if (!fExp || !fSim) return;
     TCanvas *c1 = (TCanvas*)fExp->Get("c1");
     if (!c1) return;
 
+    // --- CRITICAL FIX: SWAPPING NAMES TO MATCH PEAKS ---
+    // hDet1 (Sim Blue @ 0.8V) -> matched to h2 (Exp Blue @ 0.8V)
+    // hDet2 (Sim Red @ 0.3V)  -> matched to h_lecroy (Exp Red @ 0.3V)
     std::vector<std::pair<std::string, std::string>> pairs = {
-        {"hDet1", "h_lecroy"},
-        {"hDet2", "h2"}
+        {"hDet1", "h2"},
+        {"hDet2", "h_lecroy"}
     };
 
     for (auto const& p : pairs) {
-        std::string simName = p.first;
-        std::string expName = p.second;
+        TH1F *hSim = (TH1F*)fSim->Get(p.first.c_str());
+        TH1D *hExp = (TH1D*)c1->GetPrimitive(p.second.c_str());
 
-        TH1F *hSim = (TH1F*)fSim->Get(simName.c_str());
-        TH1D *hExp = (TH1D*)c1->GetPrimitive(expName.c_str());
-
-        if (!hExp) {
+        if (!hExp) { // Check inside stacks
             TIter next(c1->GetListOfPrimitives());
             TObject *obj;
             while ((obj = next())) {
                 if (obj->InheritsFrom(THStack::Class())) {
-                    hExp = (TH1D*)((THStack*)obj)->GetHists()->FindObject(expName.c_str());
+                    hExp = (TH1D*)((THStack*)obj)->GetHists()->FindObject(p.second.c_str());
                     if (hExp) break;
                 }
             }
@@ -48,50 +41,44 @@ void compare_spectra() {
 
         if (!hExp || !hSim) continue;
 
-        TH1D *hExpClone = (TH1D*)hExp->Clone(Form("%s_exp_norm", expName.c_str()));
-        TH1D *hSimClone = (TH1D*)hSim->Clone(Form("%s_sim_norm", simName.c_str()));
+        // Metrics
+        double mExp = hExp->GetMean(); double mSim = hSim->GetMean();
+        double rExp = hExp->GetRMS();  double rSim = hSim->GetRMS();
 
         // Normalize
-        hExpClone->Scale(1.0 / hExpClone->Integral());
-        hSimClone->Scale(1.0 / hSimClone->Integral());
+        TH1D *hEN = (TH1D*)hExp->Clone("hEN");
+        TH1D *hSN = (TH1D*)hSim->Clone("hSN");
+        hEN->Scale(1.0 / hEN->Integral());
+        hSN->Scale(1.0 / hSN->Integral());
 
-        hExpClone->SetMarkerStyle(20);
-        hExpClone->SetMarkerSize(0.6);
-        hSimClone->SetLineColor(kRed);
-        hSimClone->SetLineWidth(2);
+        TCanvas *cOut = new TCanvas(Form("c_%s", p.first.c_str()), "Compare", 800, 600);
 
-        TCanvas *cOut = new TCanvas(Form("c_%s", simName.c_str()), "Validation", 800, 900);
-        auto rp = new TRatioPlot(hSimClone, hExpClone);
-        rp->Draw();
+        // --- VISUAL FIX: DRAW EXPERIMENT AS A BLACK LINE (NO CROSSES) ---
+        hEN->SetLineColor(kBlack);
+        hEN->SetLineWidth(1);
+        hEN->SetFillColor(kBlack);
+        hEN->SetTitle(Form("Detector Comparison: %s", p.first.c_str()));
+        hEN->Draw("HIST"); // "HIST" makes it a staircase line like your original
 
-        rp->GetUpperPad()->cd();
 
-        // --- NEW STATISTICAL ANALYSIS ---
-        // 1. Chi2 Test (NORM flag for normalized histograms)
-        double chi2; int ndf; int igood;
-        double chi2Prob = hExpClone->Chi2TestX(hSimClone, chi2, ndf, igood, "NORM");
+        hSN->SetLineColor(p.first == "hDet1" ? kBlue : kRed);
+        hSN->SetFillColorAlpha(p.first == "hDet1" ? kBlue : kRed, 0.2); // Shaded area
+        hSN->Draw("HIST SAME");
 
-        // 2. Shape Analysis (Mean and RMS)
-        double meanDiff = hExpClone->GetMean() - hSimClone->GetMean();
-        double rmsRatio = hExpClone->GetRMS() / hSimClone->GetRMS();
+        double maxVal = hSN->GetMaximum();
+        hEN->SetMaximum(maxVal *1.1);
 
-        // Update Legend with multiple metrics
-        TLegend *leg = new TLegend(0.4, 0.65, 0.88, 0.88);
-        leg->SetTextSize(0.025);
-        leg->SetHeader(Form("Validation: %s", simName.c_str()));
-        leg->AddEntry(hExpClone, "Experiment", "lep");
-        leg->AddEntry(hSimClone, "Sim (Smeared)", "l");
-        leg->AddEntry((TObject*)0, Form("Chi2/ndf: %.2f / %d", chi2, ndf), "");
-        leg->AddEntry((TObject*)0, Form("Chi2 Prob: %.4f", chi2Prob), "");
-        leg->AddEntry((TObject*)0, Form("Mean Delta: %.3f V", meanDiff), "");
-        leg->AddEntry((TObject*)0, Form("RMS Ratio (Exp/Sim): %.3f", rmsRatio), "");
+        // Legend moved to Top-Left to avoid blocking data
+        TLegend *leg = new TLegend(0.58, 0.65, 0.88, 0.88);
+        leg->AddEntry(hEN, "Experiment", "l");
+        leg->AddEntry(hSN, "Simulation", "f");
+        leg->AddEntry((TObject*)0, Form("Mean Ratio: %.3f", mExp/mSim), "");
+        leg->AddEntry((TObject*)0, Form("RMS Ratio:  %.3f", rExp/rSim), "");
         leg->Draw();
 
         cOut->Update();
-        cOut->SaveAs(Form("Comparison_%s.png", simName.c_str()));
+        cOut->SaveAs(Form("Comparison_%s.png", p.first.c_str()));
 
-        std::cout << "\nResults for " << simName << ":" << std::endl;
-        std::cout << " - Chi2 Prob: " << chi2Prob << std::endl;
-        std::cout << " - RMS Ratio: " << rmsRatio << " (Target 1.0)" << std::endl;
+        cOut->Update();
     }
 }
