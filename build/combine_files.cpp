@@ -1,4 +1,3 @@
-//g++ -O3 combine_files.cpp -o combine_files
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -45,12 +44,14 @@ void consolidate(const std::string& prefix, const std::string& output_filename) 
                     outfile << line << "\n";
                 }
             }
+
             files_processed++;
             infile.close();
         }
     }
 
     outfile.close();
+
     if (files_processed > 0) {
         std::cout << "Successfully consolidated " << files_processed
                   << " files into '" << output_filename << "'" << std::endl;
