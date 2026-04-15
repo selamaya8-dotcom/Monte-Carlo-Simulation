@@ -6,6 +6,11 @@
 #include <TStyle.h>
 #include <THStack.h>
 
+#include <iostream>
+#include <string>
+#include <utility>
+#include <vector>
+
 void compare_spectra() {
     gStyle->SetOptStat(0);
 
@@ -13,6 +18,7 @@ void compare_spectra() {
     TFile *fSim = TFile::Open("detector_spectrum.root");
 
     if (!fExp || !fSim) return;
+
     TCanvas *c1 = (TCanvas*)fExp->Get("c1");
     if (!c1) return;
 
@@ -24,11 +30,12 @@ void compare_spectra() {
         {"hDet2", "h_lecroy"}
     };
 
-    for (auto const& p : pairs) {
+    for (const auto& p : pairs) {
         TH1F *hSim = (TH1F*)fSim->Get(p.first.c_str());
         TH1D *hExp = (TH1D*)c1->GetPrimitive(p.second.c_str());
 
-        if (!hExp) { // Check inside stacks
+        if (!hExp) {
+            // Check inside stacks
             TIter next(c1->GetListOfPrimitives());
             TObject *obj;
             while ((obj = next())) {
@@ -42,8 +49,10 @@ void compare_spectra() {
         if (!hExp || !hSim) continue;
 
         // Metrics
-        double mExp = hExp->GetMean(); double mSim = hSim->GetMean();
-        double rExp = hExp->GetRMS();  double rSim = hSim->GetRMS();
+        double mExp = hExp->GetMean();
+        double mSim = hSim->GetMean();
+        double rExp = hExp->GetRMS();
+        double rSim = hSim->GetRMS();
 
         // Normalize
         TH1D *hEN = (TH1D*)hExp->Clone("hEN");
@@ -58,22 +67,21 @@ void compare_spectra() {
         hEN->SetLineWidth(1);
         hEN->SetFillColor(kBlack);
         hEN->SetTitle(Form("Detector Comparison: %s", p.first.c_str()));
-        hEN->Draw("HIST"); // "HIST" makes it a staircase line like your original
-
+        hEN->Draw("HIST"); // "HIST" makes it a staircase line like the original graph
 
         hSN->SetLineColor(p.first == "hDet1" ? kBlue : kRed);
         hSN->SetFillColorAlpha(p.first == "hDet1" ? kBlue : kRed, 0.2); // Shaded area
         hSN->Draw("HIST SAME");
 
         double maxVal = hSN->GetMaximum();
-        hEN->SetMaximum(maxVal *1.1);
+        hEN->SetMaximum(maxVal * 1.1);
 
         // Legend moved to Top-Left to avoid blocking data
         TLegend *leg = new TLegend(0.58, 0.65, 0.88, 0.88);
         leg->AddEntry(hEN, "Experiment", "l");
         leg->AddEntry(hSN, "Simulation", "f");
-        leg->AddEntry((TObject*)0, Form("Mean Ratio: %.3f", mExp/mSim), "");
-        leg->AddEntry((TObject*)0, Form("RMS Ratio:  %.3f", rExp/rSim), "");
+        leg->AddEntry((TObject*)0, Form("Mean Ratio: %.3f", mExp / mSim), "");
+        leg->AddEntry((TObject*)0, Form("RMS Ratio:  %.3f", rExp / rSim), "");
         leg->Draw();
 
         cOut->Update();
