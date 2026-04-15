@@ -15,7 +15,6 @@ void make_image(const char* input_file = "combined_hits.csv") {
     TH2D *hSumAngles = new TH2D("hSum", "Total Scattering (Gen Coord);Gen X (cm);Gen Z (cm)", 50, -50, 50, 50, -50, 50);
     TH2D *hCounts = new TH2D("hCounts", "Hit Counts (Gen Coord);Gen X (cm);Gen Z (cm)", 50, -50, 50, 50, -50, 50);
 
-
     std::ifstream file(input_file);
     if (!file.is_open()) {
         std::cerr << "Error: Could not open " << input_file << std::endl;
@@ -27,12 +26,17 @@ void make_image(const char* input_file = "combined_hits.csv") {
 
     while (std::getline(file, line)) {
         if (line.empty()) continue;
+
         std::stringstream ss(line);
         std::string val;
         std::vector<double> row;
 
         while (std::getline(ss, val, ',')) {
-            try { row.push_back(std::stod(val)); } catch (...) { continue; }
+            try {
+                row.push_back(std::stod(val));
+            } catch (...) {
+                continue;
+            }
         }
 
         if (row.size() >= 11) {
@@ -43,11 +47,10 @@ void make_image(const char* input_file = "combined_hits.csv") {
             if (x == 0.0 && z == 0.0) continue;
 
             // Apply Fiducial Cut to remove edge reflections
-            if (TMath::Abs(x/10.0) > 50.0 || TMath::Abs(z/10.0) > 50.0) continue;
+            if (TMath::Abs(x / 10.0) > 50.0 || TMath::Abs(z / 10.0) > 50.0) continue;
 
-            hSumAngles->Fill(x/10.0, z/10.0, angle);  // Convert mm → cm
-            hCounts->Fill(x/10.0, z/10.0);
-
+            hSumAngles->Fill(x / 10.0, z / 10.0, angle);  // Convert mm → cm
+            hCounts->Fill(x / 10.0, z / 10.0);
         }
     }
     file.close();
