@@ -1,4 +1,3 @@
-// RunAction.hh
 #ifndef RunAction_h
 #define RunAction_h 1
 
