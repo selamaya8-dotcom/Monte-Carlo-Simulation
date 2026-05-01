@@ -4,8 +4,6 @@
 
 #include "G4UserRunAction.hh"
 
-//class HistoManager;
-
 class RunAction : public G4UserRunAction
 {
 public:
