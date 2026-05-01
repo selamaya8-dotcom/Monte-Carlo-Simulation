@@ -19,5 +19,4 @@ void open_root_file(const char* fileName) {
 
     cout << "Number of Events above 60 MeV = " << num_events << endl;
 
-    // f->Close();
 }
