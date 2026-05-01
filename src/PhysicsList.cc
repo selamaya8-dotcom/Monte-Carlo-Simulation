@@ -22,9 +22,6 @@
 
 #include "G4EmStandardPhysics_option4.hh"
 
-
-// particles
-
 #include "G4BosonConstructor.hh"
 #include "G4LeptonConstructor.hh"
 #include "G4MesonConstructor.hh"
@@ -33,7 +30,6 @@
 #include "G4IonConstructor.hh"
 #include "G4ShortLivedConstructor.hh"
 
-//User limits
 #include "G4UserSpecialCuts.hh"
 #include "G4StepLimiterPhysics.hh"
 #include "G4PhysicsListHelper.hh"
@@ -46,35 +42,23 @@ PhysicsList::PhysicsList()
   G4int verb = 1;
   SetVerboseLevel(verb);
 
-
-
-    // EM physics
     RegisterPhysics(new G4EmStandardPhysics_option4());
 
-
-    //Hadron Inelastic physics
     RegisterPhysics( new G4HadronPhysicsFTFP_BERT(verb));
 
-    // Decay
     RegisterPhysics(new G4DecayPhysics());
 
-
-
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 PhysicsList::~PhysicsList()
 { }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void PhysicsList::ContructProcess()
 {
   G4VModularPhysicsList::ConstructProcess();
   RegisterPhysics(new G4StepLimiterPhysics());//for user limits
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void PhysicsList::ConstructParticle()
 {
   G4BosonConstructor  pBosonConstructor;
@@ -95,10 +79,6 @@ void PhysicsList::ConstructParticle()
   G4ShortLivedConstructor pShortLivedConstructor;
   pShortLivedConstructor.ConstructParticle();
 }
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void PhysicsList::SetCuts()
 {
@@ -107,5 +87,3 @@ void PhysicsList::SetCuts()
   SetCutValue(1*cm, "e+");
   SetCutValue(0.1*km, "gamma");
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
