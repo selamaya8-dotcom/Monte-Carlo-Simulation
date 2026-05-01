@@ -6,7 +6,6 @@
 
 namespace fs = std::filesystem;
 
-// Function to consolidate files based on a specific prefix
 void consolidate(const std::string& prefix, const std::string& output_filename) {
     std::ofstream outfile(output_filename);
     if (!outfile.is_open()) {
@@ -61,11 +60,9 @@ void consolidate(const std::string& prefix, const std::string& output_filename) 
 }
 
 int main() {
-    // 1. Process Physics Data
     std::string phys_prefix = "accumulated_"; // Catches any density
     std::string phys_output = "final_accumulated_physics.csv";
 
-    // 2. Process Spectrum Data
     std::string spec_prefix = "spectrum_accumulated_";
     std::string spec_output = "final_accumulated_spectrum.csv";
 
