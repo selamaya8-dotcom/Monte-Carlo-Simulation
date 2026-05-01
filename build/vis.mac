@@ -4,18 +4,18 @@
 /run/verbose 2
 /run/initialize
 #
-# Use this open statement to create an OpenGL view:
+# open statement to create an OpenGL view:
 /vis/open OGLI 600x600-0+0
 #
-# Use this open statement to create a .prim file suitable for
+# open statement to create a .prim file suitable for
 # viewing in DAWN:
 #/vis/open DAWNFILE
 #
-# Use this open statement to create a .heprep file suitable for
+# open statement to create a .heprep file suitable for
 # viewing in HepRApp:
 #/vis/open HepRepFile
 #
-# Use this open statement to create a .wrl file suitable for
+#  open statement to create a .wrl file suitable for
 # viewing in a VRML viewer:
 #/vis/open VRML2FILE
 #
