@@ -3,7 +3,7 @@
 
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "G4ParticleGun.hh"
-#include "G4ThreeVector.hh" // Added for G4ThreeVector
+#include "G4ThreeVector.hh" 
 #include "globals.hh"
 
 class DetectorConstruction;
