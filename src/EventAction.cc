@@ -32,7 +32,6 @@ void EventAction::EndOfEventAction(const G4Event* event)
 
     if (!hitsCollectionA || !hitsCollectionB) return;
 
-    // Process hitsCollectionA
     G4int nHitsA = hitsCollectionA->entries();
     G4double totalEdepA = 0.;
     for (G4int i = 0; i < nHitsA; i++) {
@@ -40,7 +39,6 @@ void EventAction::EndOfEventAction(const G4Event* event)
         totalEdepA += hit->GetEdep();
     }
 
-    // Process hitsCollectionB
     G4int nHitsB = hitsCollectionB->entries();
     G4double totalEdepB = 0.;
     for (G4int i = 0; i < nHitsB; i++) {
@@ -48,14 +46,12 @@ void EventAction::EndOfEventAction(const G4Event* event)
         totalEdepB += hit->GetEdep();
     }
 
-    // --- File Writing Logic ---
     const char* env_id = std::getenv("G4_RUN_ID");
     std::string fileName = (env_id) ? "hits_output_" + std::string(env_id) + ".csv" : "hits_output.csv";
 
     std::ofstream outfile(fileName, std::ios::app);
 
     if (outfile.is_open()) {
-        // Write hits from Detector A
         for (G4int i = 0; i < nHitsA; i++) {
             auto hit = (*hitsCollectionA)[i];
             outfile << "A," << event->GetEventID() << ","
@@ -67,7 +63,6 @@ void EventAction::EndOfEventAction(const G4Event* event)
                     << fGenPosition.x() << "," << fGenPosition.y() << "," << fGenPosition.z() << "\n";
         }
 
-        // Write hits from Detector B
         for (G4int i = 0; i < nHitsB; i++) {
             auto hit = (*hitsCollectionB)[i];
             outfile << "B," << event->GetEventID() << ","
@@ -85,7 +80,6 @@ void EventAction::EndOfEventAction(const G4Event* event)
         G4cerr << "Could not open " << fileName << " for writing!" << G4endl;
     }
 
-    // --- Console Output Logic ---
     if (totalEdepA > 1E-9*MeV) {
         G4cout << "Total energy deposited in Detector A: " << G4BestUnit(totalEdepA, "Energy") << G4endl;
     }
@@ -103,4 +97,4 @@ void EventAction::EndOfEventAction(const G4Event* event)
     if (totalEdep > 0) {
         G4cout << "Total energy deposited: " << G4BestUnit(totalEdep, "Energy") << G4endl;
     }
-} // <--- This is the final closing brace for EndOfEventAction
+} 
