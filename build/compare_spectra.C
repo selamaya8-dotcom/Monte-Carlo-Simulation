@@ -22,9 +22,6 @@ void compare_spectra() {
     TCanvas *c1 = (TCanvas*)fExp->Get("c1");
     if (!c1) return;
 
-    // --- CRITICAL FIX: SWAPPING NAMES TO MATCH PEAKS ---
-    // hDet1 (Sim Blue @ 0.8V) -> matched to h2 (Exp Blue @ 0.8V)
-    // hDet2 (Sim Red @ 0.3V)  -> matched to h_lecroy (Exp Red @ 0.3V)
     std::vector<std::pair<std::string, std::string>> pairs = {
         {"hDet1", "h2"},
         {"hDet2", "h_lecroy"}
@@ -35,7 +32,6 @@ void compare_spectra() {
         TH1D *hExp = (TH1D*)c1->GetPrimitive(p.second.c_str());
 
         if (!hExp) {
-            // Check inside stacks
             TIter next(c1->GetListOfPrimitives());
             TObject *obj;
             while ((obj = next())) {
@@ -48,13 +44,11 @@ void compare_spectra() {
 
         if (!hExp || !hSim) continue;
 
-        // Metrics
         double mExp = hExp->GetMean();
         double mSim = hSim->GetMean();
         double rExp = hExp->GetRMS();
         double rSim = hSim->GetRMS();
 
-        // Normalize
         TH1D *hEN = (TH1D*)hExp->Clone("hEN");
         TH1D *hSN = (TH1D*)hSim->Clone("hSN");
         hEN->Scale(1.0 / hEN->Integral());
@@ -62,21 +56,19 @@ void compare_spectra() {
 
         TCanvas *cOut = new TCanvas(Form("c_%s", p.first.c_str()), "Compare", 800, 600);
 
-        // --- VISUAL FIX: DRAW EXPERIMENT AS A BLACK LINE (NO CROSSES) ---
         hEN->SetLineColor(kBlack);
         hEN->SetLineWidth(1);
         hEN->SetFillColor(kBlack);
         hEN->SetTitle(Form("Detector Comparison: %s", p.first.c_str()));
-        hEN->Draw("HIST"); // "HIST" makes it a staircase line like the original graph
+        hEN->Draw("HIST"); 
 
         hSN->SetLineColor(p.first == "hDet1" ? kBlue : kRed);
-        hSN->SetFillColorAlpha(p.first == "hDet1" ? kBlue : kRed, 0.2); // Shaded area
+        hSN->SetFillColorAlpha(p.first == "hDet1" ? kBlue : kRed, 0.2); 
         hSN->Draw("HIST SAME");
 
         double maxVal = hSN->GetMaximum();
         hEN->SetMaximum(maxVal * 1.1);
 
-        // Legend moved to Top-Left to avoid blocking data
         TLegend *leg = new TLegend(0.58, 0.65, 0.88, 0.88);
         leg->AddEntry(hEN, "Experiment", "l");
         leg->AddEntry(hSN, "Simulation", "f");
