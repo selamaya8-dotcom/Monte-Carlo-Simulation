@@ -12,8 +12,6 @@
 #include "G4Sphere.hh"
 
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 DetectorConstruction::DetectorConstruction()
 :G4VUserDetectorConstruction(), fDetectorLogic(0) , det1LV(0), det2LV(0), fSoilDensity(0.*g/cm3)
 {
@@ -23,26 +21,19 @@ DetectorConstruction::DetectorConstruction()
   G4cout << "DENSITY!!!!   =" << fSoilDensity/(g/cm3)<< G4endl;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 DetectorConstruction::~DetectorConstruction()
 {}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
   return ConstructVolumes();
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
 {
     DefineMaterials();
     auto nist = G4NistManager::Instance();
 
-    // 1. Define Materials
     G4Element* elSi = new G4Element("Silicon", "Si", 14., 28.0855*g/mole);
     G4Element* elMg = new G4Element("Magnesium", "Mg", 12., 24.305*g/mole);
     G4Element* elAl = new G4Element("Aluminum", "Al", 13., 26.9815*g/mole);
@@ -79,7 +70,6 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
 
     auto air = nist->FindOrBuildMaterial("G4_AIR");
 
-    // 2. World and Ground
     auto worldS = new G4Box("World", 50*m, 50*m, 50*m);
     auto worldLV = new G4LogicalVolume(worldS, air, "World");
     auto worldPV = new G4PVPlacement(nullptr, {}, worldLV, "World", nullptr, false, 0);
@@ -91,7 +81,6 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
     new G4PVPlacement(nullptr, G4ThreeVector(0, -50*m, 0), groundLV, "Ground", worldLV, false, 0);
 */
 
-    // 3. Setup Detector (Define boxZ and detPlacement FIRST)
     G4double boxXY = 15*cm;
     G4double boxZ = 5*cm;
     G4ThreeVector detPlacement = G4ThreeVector(0, (boxZ/2) + 0.5*m, 0); // Now it's declared
@@ -112,14 +101,12 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
         G4Element* elH = nist->FindOrBuildElement("H");
         G4Element* elO = nist->FindOrBuildElement("O");
 
-        // Cellulose-based cardboard definition (approximate density 0.7 g/cm3)
         cardboard = new G4Material("Cardboard", 0.7*g/cm3, 3);
         cardboard->AddElement(elC, 6);
         cardboard->AddElement(elH, 10);
         cardboard->AddElement(elO, 5);
     }
 
-    // Now assign it to the logical volume
     auto detLV = new G4LogicalVolume(detS, cardboard, "Box");
     G4RotationMatrix* rotVertical = new G4RotationMatrix();
     rotVertical->rotateX(90.*deg);
@@ -134,7 +121,6 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
     new G4PVPlacement(nullptr, G4ThreeVector(0, 0,  boxZ/2 - wallPadding - detZ/2), det1LV, "Det1", detLV, false, 0);
     new G4PVPlacement(nullptr, G4ThreeVector(0, 0, -boxZ/2 + wallPadding + detZ/2), det2LV, "Det2", detLV, false, 0);
 
-    // 4. Setup Sphere (Now we can use detPlacement and boxZ)
     /* --- Commenting out Sphere ---
     G4double sphereRadius = 0.5 * m;
     G4double sphereY = detPlacement.y() + (boxZ/2) + 1.0*m + sphereRadius;
@@ -154,13 +140,11 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
     G4double cubeY = detPlacement.y() + (boxZ/2) + 1.0*m + cubeHalfSide;
     G4ThreeVector finalCubePos = G4ThreeVector(0, cubeY, 0);
 
-    // Update member variables for tracking/analysis
     fBuildHx = cubeHalfSide;
     fBuildHy = cubeHalfSide;
     fBuildHz = cubeHalfSide;
     fBuildCenter = finalCubePos;
 
-    // New Cube Implementation
     auto soilCubeSolid = new G4Box("SoilCube", cubeHalfSide, cubeHalfSide, cubeHalfSide);
     auto soilCubeLogical = new G4LogicalVolume(soilCubeSolid, Soil, "SoilCubeLV");
     new G4PVPlacement(nullptr,
@@ -174,7 +158,6 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
 }
 
 void DetectorConstruction::ConstructSDandField() {
-    // Create separate sensitive detectors for each logical volume
     auto muonSD_A = new MuonDetectorA("MuonSD_A");
     auto muonSD_B = new MuonDetectorB("MuonSD_B");
     auto sdManager = G4SDManager::GetSDMpointer();
