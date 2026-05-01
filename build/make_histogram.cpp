@@ -9,7 +9,7 @@
 #include <TFile.h>
 #include <TH1F.h>
 #include <TLegend.h>
-#include <TRandom3.h> // For noise
+#include <TRandom3.h> 
 #include <TStyle.h>
 
 int main(int argc, char* argv[]) {
@@ -18,9 +18,8 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // --- Noise Setup ---
     TRandom3 randGen(0);
-    const double sigma_noise = 0.05; // Adjust this to match experiment spread
+    const double sigma_noise = 0.05; 
     const double MeV_to_Volt = 1.0 / 5.0;
 
     const std::string physFile = argv[1];
@@ -42,7 +41,6 @@ int main(int argc, char* argv[]) {
     int specCount = 0;
     std::string line;
 
-    // --- Read Physics CSV ---
     std::ifstream pFile(physFile);
     if (!pFile.is_open()) {
         std::cerr << "Error: Could not open physics file: " << physFile << std::endl;
@@ -63,11 +61,11 @@ int main(int argc, char* argv[]) {
 
         if (row.size() >= 7) {
             try {
-                energyDeposits.push_back(std::stod(row[5]) * MeV_to_Volt); // Total energy deposit in volts
-                initialAngles.push_back(std::stod(row[6])); // Initial muon angle in degrees
+                energyDeposits.push_back(std::stod(row[5]) * MeV_to_Volt); 
+                initialAngles.push_back(std::stod(row[6])); 
 
                 if (row.size() > 7) {
-                    initialEnergies.push_back(std::stod(row[7]) / 1000.0); // Convert MeV to GeV
+                    initialEnergies.push_back(std::stod(row[7]) / 1000.0); 
                 }
 
                 lineCount++;
@@ -78,7 +76,6 @@ int main(int argc, char* argv[]) {
     }
     pFile.close();
 
-    // --- Read Spectrum CSV with Smearing ---
     std::ifstream sFile(specFile);
     if (!sFile.is_open()) {
         std::cerr << "Error: Could not open spectrum file: " << specFile << std::endl;
@@ -102,8 +99,8 @@ int main(int argc, char* argv[]) {
                 const double rawA = std::stod(row[1]) * MeV_to_Volt;
                 const double rawB = std::stod(row[2]) * MeV_to_Volt;
 
-                specEnergyA.push_back(randGen.Gaus(rawA, sigma_noise)); // Smeared detector A signal
-                specEnergyB.push_back(randGen.Gaus(rawB, sigma_noise)); // Smeared detector B signal
+                specEnergyA.push_back(randGen.Gaus(rawA, sigma_noise)); 
+                specEnergyB.push_back(randGen.Gaus(rawB, sigma_noise)); 
                 specCount++;
             } catch (...) {
                 continue;
@@ -116,7 +113,6 @@ int main(int argc, char* argv[]) {
 
     TCanvas* c1 = new TCanvas("c1", "Canvas", 800, 600);
 
-    // --- A. DETECTOR COMPARISON ---
     gStyle->SetOptStat(0);
 
     TH1F* hDet1 = new TH1F("hDet1", "Detector Comparison;Signal [Volts];counts", 60, 0, 2);
@@ -138,18 +134,15 @@ int main(int argc, char* argv[]) {
     hDet2->Draw("HIST E SAME");
 
     TLegend* leg = new TLegend(0.55, 0.65, 0.89, 0.89);
-    leg->SetMargin(0.2); // Adjusts the width of the colored boxes
+    leg->SetMargin(0.2); 
     leg->SetTextSize(0.025);
 
-    // Detector 1 Section
     leg->AddEntry(hDet1, "Detector 1", "f");
     leg->AddEntry((TObject*)0, Form("  Mean: %.3f V", hDet1->GetMean()), "");
     leg->AddEntry((TObject*)0, Form("  StdDev: %.3f V", hDet1->GetStdDev()), "");
 
-    // Spacer
     leg->AddEntry((TObject*)0, "", "");
 
-    // Detector 2 Section
     leg->AddEntry(hDet2, "Detector 2", "f");
     leg->AddEntry((TObject*)0, Form("  Mean: %.3f V", hDet2->GetMean()), "");
     leg->AddEntry((TObject*)0, Form("  StdDev: %.3f V", hDet2->GetStdDev()), "");
@@ -162,7 +155,6 @@ int main(int argc, char* argv[]) {
     hDet2->Write();
     specRootFile->Close();
 
-    // --- B. Total Energy Deposit ---
     c1->Clear();
     gStyle->SetOptStat(1111);
 
@@ -173,7 +165,6 @@ int main(int argc, char* argv[]) {
     hEnergy->Draw("HIST");
     c1->SaveAs((baseName + "_energy.png").c_str());
 
-    // --- C. Initial Angle ---
     c1->Clear();
 
     TH1F* hAngle = new TH1F("hAngle", "Initial Muon Angle;Angle (deg);Events", 90, 0, 90);
@@ -183,7 +174,6 @@ int main(int argc, char* argv[]) {
     hAngle->Draw("HIST");
     c1->SaveAs((baseName + "_angle.png").c_str());
 
-    // --- D. Initial Energy ---
     c1->Clear();
 
     TH1F* hGenEnergy = new TH1F("hGenEnergy", "Initial Muon Energy;Energy (GeV);Events", 40, 0, 40);
