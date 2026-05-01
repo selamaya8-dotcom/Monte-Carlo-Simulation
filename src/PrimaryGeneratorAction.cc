@@ -24,7 +24,6 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction() {
 G4double PrimaryGeneratorAction::GetMuonEnergy(G4double theta) {
     G4double E;
     G4double cosTheta = std::cos(theta);
-    // Increased max probability for safer rejection sampling
     G4double maxProb = 0.14;
 
     while (true) {
@@ -43,19 +42,15 @@ G4double PrimaryGeneratorAction::GetMuonEnergy(G4double theta) {
     }
 }
 
-// Improved Intersection Check: Standard Ray-Sphere Algebra
-// Helper function: Slab method for Ray-Box intersection
 G4bool PrimaryGeneratorAction::DoesRayHitBox(G4ThreeVector origin, G4ThreeVector dir,
                                              G4ThreeVector boxCenter, G4ThreeVector boxHalf) {
-    // Translate origin to box-local coordinates
     G4ThreeVector relOrigin = origin - boxCenter;
 
     G4double tMin = -kInfinity;
     G4double tMax = kInfinity;
 
-    // Check intersection with each pair of planes (X, Y, Z)
     for (int i = 0; i < 3; ++i) {
-        if (std::abs(dir[i]) < 1e-9) { // Ray is parallel to planes
+        if (std::abs(dir[i]) < 1e-9) { 
             if (std::abs(relOrigin[i]) > boxHalf[i]) return false;
         } else {
             G4double t1 = (-boxHalf[i] - relOrigin[i]) / dir[i];
@@ -65,7 +60,6 @@ G4bool PrimaryGeneratorAction::DoesRayHitBox(G4ThreeVector origin, G4ThreeVector
             tMax = std::min(tMax, std::max(t1, t2));
         }
     }
-    // Ray hits if the intersection interval is valid and in front of the ray
     return tMax >= tMin && tMax > 0;
 }
 
@@ -79,14 +73,11 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     G4double theta;
     G4bool hitsStructure = false;
 
-    // 1. Re-generation loop: Keep trying until a valid muon hits the box
     while (!hitsStructure) {
-        // Sample Position on the plate
         G4double xPos = detCenter.x() + (G4UniformRand() - 0.5) * 2.3 * boxHalf.x();
         G4double zPos = detCenter.z() + (G4UniformRand() - 0.5) * 2.3 * boxHalf.z();
         sourcePos.set(xPos, generationHeight, zPos);
 
-        // Sample Angle (cos^2 distribution) with 70 deg limit
         G4double maxAngle = 75.0 * deg;
         do {
             theta = std::acos(std::pow(G4UniformRand(), 1.0/3.0));
@@ -99,19 +90,16 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
             std::sin(theta) * std::sin(phi)
         );
 
-        // 2. Check if this specific ray actually intersects the building
         if (DoesRayHitBox(sourcePos, direction, detCenter, boxHalf)) {
             hitsStructure = true;
         }
     }
 
-    // 3. Set properties once a valid ray is found
     G4double energy = GetMuonEnergy(theta);
     fParticleGun->SetParticlePosition(sourcePos);
     fParticleGun->SetParticleMomentumDirection(direction);
     fParticleGun->SetParticleEnergy(energy);
 
-    // Pass to EventAction
     auto eventAction = (EventAction*)G4RunManager::GetRunManager()->GetUserEventAction();
     if (eventAction) {
         eventAction->SetGenAngle(theta);
