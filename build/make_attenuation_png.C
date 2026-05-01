@@ -18,7 +18,6 @@ void make_attenuation_png(const char* no_sphere_file, const char* with_sphere_fi
     TH2D *hNo = new TH2D("hNo", ";X (cm);Z (cm)", 50, -55, 55, 50, -55, 55);
     TH2D *hYes = new TH2D("hYes", ";X (cm);Z (cm)", 50, -55, 55, 50, -55, 55);
 
-    // Load function (no lambda to avoid issues)
     auto load_csv = [&](TH2D* h, const char* fname) -> int {
         std::ifstream f(fname);
         if (!f.is_open()) return 0;
@@ -55,7 +54,6 @@ void make_attenuation_png(const char* no_sphere_file, const char* with_sphere_fi
     hTrans->SetMinimum(0.1);
     hTrans->SetMaximum(1.2);
 
-    // PNGs
     TCanvas *c1 = new TCanvas("c1", "No Sphere", 1000, 800);
     c1->SetLogz(); hNo->Draw("COLZ"); c1->SaveAs("01_no_sphere.png");
 
@@ -71,15 +69,12 @@ void make_attenuation_png(const char* no_sphere_file, const char* with_sphere_fi
     c4->cd(2); hTrans->Draw("COLZ");
     c4->SaveAs("04_summary.png");
 
-    std::cout << "\n✅ PNGs created:" << std::endl;
-    std::cout << "03_transmission.png ← YOUR PROOF (T<1 in center)" << std::endl;
-    // Add after c4 (Summary plot) - LOG TRANSMISSION
+    std::cout << "\n PNGs created:" << std::endl;
+    std::cout << "03_transmission.png ← (T<1 in center)" << std::endl;
 
-    // SMOOTH FUNCTION GRAPH: T vs X (Desmos-style)
     TCanvas *c5 = new TCanvas("c5", "Transmission T(X)", 1000, 600);
     c5->cd()->SetGrid();
 
-    // Extract data points for smooth curve
     std::vector<double> x_vals, t_vals, t_errs;
     int nxbins = hTrans->GetNbinsX();
 
@@ -87,7 +82,6 @@ void make_attenuation_png(const char* no_sphere_file, const char* with_sphere_fi
         double x = hTrans->GetXaxis()->GetBinCenter(ix);
         double sum_t = 0, sum_w = 0, sum_n_no = 0;
 
-        // Average over central Z bins (±10cm) for smooth curve
         for (int iy = hTrans->GetYaxis()->FindBin(-10); iy <= hTrans->GetYaxis()->FindBin(10); iy++) {
             double t = hTrans->GetBinContent(ix, iy);
             double n_no = hNo->GetBinContent(ix, iy);
@@ -110,7 +104,6 @@ void make_attenuation_png(const char* no_sphere_file, const char* with_sphere_fi
         }
     }
 
-    // Create smooth TGraph
     int npoints = x_vals.size();
     TGraphErrors *graph = new TGraphErrors(npoints, &x_vals[0], &t_vals[0], 0, &t_errs[0]);
     graph->SetTitle("Transmission Function T(X);Generator X (cm);T(X)");
@@ -119,9 +112,8 @@ void make_attenuation_png(const char* no_sphere_file, const char* with_sphere_fi
     graph->SetMarkerColor(kBlue);
     graph->SetLineColor(kBlue);
     graph->SetLineWidth(3);
-    graph->Draw("AP");  // Points + smooth line
+    graph->Draw("AP");  
 
-    // Reference line T=1.0
     TF1 *baseline = new TF1("baseline", "1", -45, 45);
     baseline->SetLineColor(kGray);
     baseline->SetLineStyle(7);
