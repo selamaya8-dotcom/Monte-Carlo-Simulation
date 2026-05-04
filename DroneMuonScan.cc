@@ -1,6 +1,5 @@
 
 #include "G4Types.hh"
-//#include "G4Random.hh" 
 #include <ctime>
 
 #include "G4RunManagerFactory.hh"
